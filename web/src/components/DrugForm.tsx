@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Drug, categories } from "@/types/drug";
+import { useState, useEffect } from "react";
 
 interface DrugFormProps {
   formData: Partial<Drug>;
@@ -19,6 +20,19 @@ interface DrugFormProps {
   submitButtonClass: string;
 }
 
+const dosageUnits = [
+  "mg",
+  "g",
+  "ml",
+  "L",
+  "mcg",
+  "units",
+  "IU",
+  "drops",
+  "tablets",
+  "capsules",
+];
+
 export function DrugForm({
   formData,
   setFormData,
@@ -26,6 +40,41 @@ export function DrugForm({
   submitText,
   submitButtonClass,
 }: DrugFormProps) {
+  const [dosageValue, setDosageValue] = useState("");
+  const [dosageUnit, setDosageUnit] = useState("mg");
+
+  useEffect(() => {
+    if (formData.dosage) {
+      const match = formData.dosage.match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)$/);
+      if (match) {
+        setDosageValue(match[1]);
+        setDosageUnit(match[2]);
+      } else {
+        setDosageValue(formData.dosage);
+        setDosageUnit("mg");
+      }
+    } else {
+      setDosageValue("");
+      setDosageUnit("mg");
+    }
+  }, [formData.dosage]);
+
+  const updateDosage = (value: string, unit: string) => {
+    const combinedDosage = value ? `${value}${unit}` : "";
+    setFormData({ ...formData, dosage: combinedDosage });
+  };
+
+  const handleDosageValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDosageValue(value);
+    updateDosage(value, dosageUnit);
+  };
+
+  const handleDosageUnitChange = (unit: string) => {
+    setDosageUnit(unit);
+    updateDosage(dosageValue, unit);
+  };
+
   return (
     <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -52,15 +101,31 @@ export function DrugForm({
         </div>
         <div>
           <Label className="text-black font-bold">Dosage</Label>
-          <Input
-            value={formData.dosage || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, dosage: e.target.value })
-            }
-            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
-          />
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              step="0.1"
+              placeholder="Amount"
+              value={dosageValue}
+              onChange={handleDosageValueChange}
+              className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold flex-1"
+            />
+            <Select value={dosageUnit} onValueChange={handleDosageUnitChange}>
+              <SelectTrigger className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-4 border-black bg-white">
+                {dosageUnits.map((unit) => (
+                  <SelectItem key={unit} value={unit} className="font-bold">
+                    {unit}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div>
+          right
           <Label className="text-black font-bold">Quantity</Label>
           <Input
             type="number"
