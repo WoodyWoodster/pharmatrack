@@ -29,7 +29,6 @@ export default function PharmacyInventory() {
   const [confirmText, setConfirmText] = useState("");
   const [formData, setFormData] = useState<Partial<Drug>>({});
 
-  // Use TanStack Query hooks
   const {
     data: drugs = [],
     isLoading,
@@ -167,7 +166,6 @@ export default function PharmacyInventory() {
   return (
     <div className="min-h-screen bg-yellow-300 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <Card className="mb-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
           <CardHeader className="bg-red-400 border-b-4 border-black">
             <CardTitle className="text-4xl font-black text-black flex items-center gap-3">
@@ -187,17 +185,14 @@ export default function PharmacyInventory() {
           </CardContent>
         </Card>
 
-        {/* Stats Cards */}
         <StatsCards drugs={drugs} />
 
-        {/* Inventory Table */}
         <InventoryTable
           drugs={drugs}
           onEditDrug={openEditDrawer}
           onDeleteDrug={openDeleteModal}
         />
 
-        {/* Add Drug Drawer */}
         <AddDrugDrawer
           isOpen={isAddDrawerOpen}
           onOpenChange={setIsAddDrawerOpen}
@@ -206,7 +201,6 @@ export default function PharmacyInventory() {
           onAdd={handleAdd}
         />
 
-        {/* Edit Drug Drawer */}
         <EditDrugDrawer
           isOpen={isEditDrawerOpen}
           onOpenChange={setIsEditDrawerOpen}
@@ -215,7 +209,6 @@ export default function PharmacyInventory() {
           onEdit={handleEdit}
         />
 
-        {/* Delete Confirmation Modal */}
         <DeleteConfirmationModal
           isOpen={isDeleteModalOpen}
           onOpenChange={setIsDeleteModalOpen}
