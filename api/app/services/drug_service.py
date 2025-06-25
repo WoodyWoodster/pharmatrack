@@ -1,0 +1,123 @@
+from typing import List, Optional
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from app.repositories.drug_repository import DrugRepository
+from app.schemas.drug import DrugCreate, DrugUpdate, DrugResponse
+from app.models.drug import Drug
+from datetime import datetime
+
+
+class DrugService:
+    def __init__(self, db: Session):
+        self.repository = DrugRepository(db)
+
+    def get_all_drugs(self) -> List[DrugResponse]:
+        """Get all drugs"""
+        drugs = self.repository.get_all()
+        return [DrugResponse.model_validate(drug) for drug in drugs]
+
+    def get_drug_by_id(self, drug_id: int) -> DrugResponse:
+        """Get a drug by ID"""
+        drug = self.repository.get_by_id(drug_id)
+        if not drug:
+            raise HTTPException(status_code=404, detail="Drug not found")
+        return DrugResponse.model_validate(drug)
+
+    def search_drugs(
+        self, query: str, category: Optional[str] = None
+    ) -> List[DrugResponse]:
+        """Search drugs with optional category filter"""
+        if query:
+            drugs = self.repository.search(query)
+        else:
+            drugs = self.repository.get_all()
+
+        if category and category != "All":
+            drugs = [drug for drug in drugs if drug.category == category]
+
+        return [DrugResponse.model_validate(drug) for drug in drugs]
+
+    def get_low_stock_drugs(self, threshold: int = 100) -> List[DrugResponse]:
+        """Get drugs with low stock"""
+        drugs = self.repository.get_low_stock(threshold)
+        return [DrugResponse.model_validate(drug) for drug in drugs]
+
+    def get_expiring_soon_drugs(self, days: int = 90) -> List[DrugResponse]:
+        """Get drugs expiring within the specified number of days"""
+        all_drugs = self.repository.get_all()
+        expiring_drugs = []
+
+        current_date = datetime.now().date()
+
+        for drug in all_drugs:
+            try:
+                exp_date = datetime.strptime(drug.expiration_date, "%Y-%m-%d").date()
+                days_until_expiry = (exp_date - current_date).days
+                if 0 <= days_until_expiry <= days:
+                    expiring_drugs.append(drug)
+            except ValueError:
+                continue
+
+        return [DrugResponse.model_validate(drug) for drug in expiring_drugs]
+
+    def create_drug(self, drug_data: DrugCreate) -> DrugResponse:
+        """Create a new drug with validation"""
+        if self.repository.exists(drug_data.name):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Drug with name '{drug_data.name}' already exists",
+            )
+
+        self._validate_expiration_date(drug_data.expiration_date)
+
+        drug = self.repository.create(drug_data)
+        return DrugResponse.model_validate(drug)
+
+    def update_drug(self, drug_id: int, drug_data: DrugUpdate) -> DrugResponse:
+        """Update an existing drug"""
+        existing_drug = self.repository.get_by_id(drug_id)
+        if not existing_drug:
+            raise HTTPException(status_code=404, detail="Drug not found")
+
+        if drug_data.name and drug_data.name != existing_drug.name:
+            if self.repository.exists(drug_data.name, exclude_id=drug_id):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Drug with name '{drug_data.name}' already exists",
+                )
+
+        if drug_data.expiration_date:
+            self._validate_expiration_date(drug_data.expiration_date)
+
+        updated_drug = self.repository.update(drug_id, drug_data)
+        if not updated_drug:
+            raise HTTPException(status_code=404, detail="Drug not found")
+
+        return DrugResponse.model_validate(updated_drug)
+
+    def delete_drug(self, drug_id: int) -> dict:
+        """Delete a drug"""
+        if not self.repository.delete(drug_id):
+            raise HTTPException(status_code=404, detail="Drug not found")
+        return {"message": "Drug deleted successfully"}
+
+    def get_categories(self) -> List[str]:
+        """Get all unique categories"""
+        drugs = self.repository.get_all()
+        categories = list(set(drug.category for drug in drugs))
+        return sorted(categories)
+
+    def _validate_expiration_date(self, expiration_date: str) -> None:
+        """Validate expiration date format and ensure it's not in the past"""
+        try:
+            exp_date = datetime.strptime(expiration_date, "%Y-%m-%d").date()
+            current_date = datetime.now().date()
+
+            if exp_date < current_date:
+                raise HTTPException(
+                    status_code=400, detail="Expiration date cannot be in the past"
+                )
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid expiration date format. Use YYYY-MM-DD"
+            )

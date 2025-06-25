@@ -87,7 +87,7 @@ export function InventoryTable({
                     {drug.name}
                   </TableCell>
                   <TableCell className="border-r-2 border-black">
-                    {drug.genericName}
+                    {drug.generic_name}
                   </TableCell>
                   <TableCell className="border-r-2 border-black">
                     {drug.dosage}
@@ -100,7 +100,7 @@ export function InventoryTable({
                     {drug.quantity}
                   </TableCell>
                   <TableCell className="border-r-2 border-black">
-                    {drug.expirationDate}
+                    {drug.expiration_date}
                   </TableCell>
                   <TableCell className="border-r-2 border-black">
                     {drug.manufacturer}

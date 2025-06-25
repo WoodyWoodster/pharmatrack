@@ -40,11 +40,11 @@ export function DrugForm({
         <div>
           <Label className="text-black font-bold">Generic Name</Label>
           <Input
-            value={formData.genericName || ""}
+            value={formData.generic_name || ""}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                genericName: e.target.value,
+                generic_name: e.target.value,
               })
             }
             className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
@@ -78,11 +78,11 @@ export function DrugForm({
           <Label className="text-black font-bold">Expiration Date</Label>
           <Input
             type="date"
-            value={formData.expirationDate || ""}
+            value={formData.expiration_date || ""}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                expirationDate: e.target.value,
+                expiration_date: e.target.value,
               })
             }
             className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
