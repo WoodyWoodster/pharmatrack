@@ -31,7 +31,23 @@ export default function RootLayout({
       >
         <QueryProvider>
           {children}
-          <Toaster position="top-right" />
+          <Toaster
+            position="bottom-center"
+            toastOptions={{
+              style: {
+                background: "white",
+                border: "4px solid black",
+                boxShadow: "4px 4px 0px 0px rgba(0,0,0,1)",
+                borderRadius: "0px",
+                fontWeight: "bold",
+                fontSize: "14px",
+                padding: "16px",
+                color: "black",
+              },
+              className: "neo-brutal-toast",
+            }}
+            theme="light"
+          />
         </QueryProvider>
       </body>
     </html>
