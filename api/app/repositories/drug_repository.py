@@ -53,6 +53,22 @@ class DrugRepository:
         self.db.refresh(db_drug)
         return db_drug
 
+    def batch_create(self, drugs_data: List[DrugCreate]) -> List[Drug]:
+        """Create multiple drugs efficiently in a single transaction"""
+        if not drugs_data:
+            return []
+
+        db_drugs = [Drug(**drug_data.model_dump()) for drug_data in drugs_data]
+
+        self.db.add_all(db_drugs)
+
+        self.db.commit()
+
+        for drug in db_drugs:
+            self.db.refresh(drug)
+
+        return db_drugs
+
     def update(self, drug_id: int, drug_data: DrugUpdate) -> Optional[Drug]:
         """Update an existing drug"""
         db_drug = self.get_by_id(drug_id)

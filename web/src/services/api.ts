@@ -46,6 +46,11 @@ export const drugApi = {
     await api.delete(`/drugs/${id}`);
   },
 
+  batchCreateDrugs: async (drugsData: CreateDrugRequest[]): Promise<Drug[]> => {
+    const response = await api.post("/drugs/batch", drugsData);
+    return response.data;
+  },
+
   getLowStockDrugs: async (threshold = 100): Promise<Drug[]> => {
     const response = await api.get(`/drugs/low-stock?threshold=${threshold}`);
     return response.data;

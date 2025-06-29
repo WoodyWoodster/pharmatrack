@@ -186,7 +186,48 @@ class TestDrugRepository:
         assert len(results) == 0
 
     def test_exists_method(self, sample_drug):
-        """Test the exists method."""
+        """Test that exists method correctly identifies existing drugs."""
         assert self.repository.exists(sample_drug.sku) is True
-
         assert self.repository.exists("NON-EXISTENT") is False
+
+    def test_batch_create_drugs(self):
+        """Test batch creation of multiple drugs."""
+        drugs_data = [
+            DrugCreate(
+                sku="BATCH-001",
+                name="Batch Drug 1",
+                generic_name="batch_drug_1",
+                dosage="10mg",
+                quantity=100,
+                expiration_date="2025-12-31",
+                manufacturer="Batch Pharma",
+                price=29.99,
+                category="Antibiotic",
+            ),
+            DrugCreate(
+                sku="BATCH-002",
+                name="Batch Drug 2",
+                generic_name="batch_drug_2",
+                dosage="20mg",
+                quantity=150,
+                expiration_date="2025-11-30",
+                manufacturer="Batch Pharma",
+                price=39.99,
+                category="NSAID",
+            ),
+        ]
+
+        created_drugs = self.repository.batch_create(drugs_data)
+
+        assert len(created_drugs) == 2
+        assert created_drugs[0].sku == "BATCH-001"
+        assert created_drugs[1].sku == "BATCH-002"
+        assert all(drug.id is not None for drug in created_drugs)
+
+        all_drugs = self.repository.get_all()
+        assert len(all_drugs) == 2
+
+    def test_batch_create_empty_list(self):
+        """Test batch creation with empty list."""
+        result = self.repository.batch_create([])
+        assert result == []

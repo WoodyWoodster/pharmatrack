@@ -9,6 +9,7 @@ import { InventoryTable } from "@/components/InventoryTable";
 import { AddDrugDrawer } from "@/components/AddDrugDrawer";
 import { EditDrugDrawer } from "@/components/EditDrugDrawer";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { BatchImportDrawer } from "@/components/BatchImportDrawer";
 import {
   useDrugs,
   useCreateDrug,
@@ -24,6 +25,7 @@ export default function PharmacyInventory() {
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
   const [editingDrug, setEditingDrug] = useState<Drug | null>(null);
   const [deletingDrug, setDeletingDrug] = useState<Drug | null>(null);
   const [confirmText, setConfirmText] = useState("");
@@ -137,6 +139,10 @@ export default function PharmacyInventory() {
     setIsAddDrawerOpen(true);
   };
 
+  const handleBatchImportClick = () => {
+    setIsBatchImportOpen(true);
+  };
+
   const handleDeleteCancel = () => {
     setIsDeleteModalOpen(false);
     setConfirmText("");
@@ -190,6 +196,7 @@ export default function PharmacyInventory() {
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
             onAddDrug={handleAddDrugClick}
+            onBatchImport={handleBatchImportClick}
           />
           <StatsCards drugs={drugs} />
           <InventoryTable
@@ -221,6 +228,10 @@ export default function PharmacyInventory() {
         setConfirmText={setConfirmText}
         onDelete={handleDelete}
         onCancel={handleDeleteCancel}
+      />
+      <BatchImportDrawer
+        isOpen={isBatchImportOpen}
+        onOpenChange={setIsBatchImportOpen}
       />
     </div>
   );

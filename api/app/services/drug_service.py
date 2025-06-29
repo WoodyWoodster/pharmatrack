@@ -74,6 +74,31 @@ class DrugService:
         drug = self.repository.create(drug_data)
         return DrugResponse.model_validate(drug)
 
+    def batch_create_drugs(self, drugs_data: List[DrugCreate]) -> List[DrugResponse]:
+        """Create multiple drugs in a batch with validation"""
+        if not drugs_data:
+            raise HTTPException(status_code=400, detail="No drug data provided")
+
+        skus = []
+        for drug_data in drugs_data:
+            if self.repository.exists(drug_data.sku):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Drug with SKU '{drug_data.sku}' already exists",
+                )
+
+            if drug_data.sku in skus:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Duplicate SKU '{drug_data.sku}' in batch data",
+                )
+
+            skus.append(drug_data.sku)
+            self._validate_expiration_date(drug_data.expiration_date)
+
+        created_drugs = self.repository.batch_create(drugs_data)
+        return [DrugResponse.model_validate(drug) for drug in created_drugs]
+
     def update_drug(self, drug_id: int, drug_data: DrugUpdate) -> DrugResponse:
         """Update an existing drug"""
         existing_drug = self.repository.get_by_id(drug_id)

@@ -11,6 +11,7 @@ describe("SearchAndFilter", () => {
     selectedCategory: "All",
     setSelectedCategory: vi.fn(),
     onAddDrug: vi.fn(),
+    onBatchImport: vi.fn(),
   };
 
   beforeEach(() => {

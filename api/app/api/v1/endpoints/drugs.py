@@ -65,6 +65,14 @@ async def create_drug(
     return drug_service.create_drug(drug_data)
 
 
+@router.post("/batch", response_model=List[DrugResponse], status_code=201)
+async def batch_create_drugs(
+    drugs_data: List[DrugCreate], drug_service: DrugService = Depends(get_drug_service)
+):
+    """Create multiple drugs in a batch"""
+    return drug_service.batch_create_drugs(drugs_data)
+
+
 @router.put("/{drug_id}", response_model=DrugResponse)
 async def update_drug(
     drug_id: int,

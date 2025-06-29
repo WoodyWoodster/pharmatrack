@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, Plus } from "lucide-react";
+import { Search, Filter, Plus, Upload } from "lucide-react";
 import { categories } from "@/types/drug";
 
 interface SearchAndFilterProps {
@@ -16,6 +16,7 @@ interface SearchAndFilterProps {
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
   onAddDrug: () => void;
+  onBatchImport: () => void;
 }
 
 export function SearchAndFilter({
@@ -24,6 +25,7 @@ export function SearchAndFilter({
   selectedCategory,
   setSelectedCategory,
   onAddDrug,
+  onBatchImport,
 }: SearchAndFilterProps) {
   return (
     <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
@@ -51,10 +53,16 @@ export function SearchAndFilter({
           </SelectContent>
         </Select>
       </div>
-      <Button onClick={onAddDrug}>
-        <Plus className="mr-2 h-5 w-5" />
-        Add Drug
-      </Button>
+      <div className="flex gap-2">
+        <Button onClick={onBatchImport} variant="outline">
+          <Upload className="mr-2 h-5 w-5" />
+          Batch Import
+        </Button>
+        <Button onClick={onAddDrug}>
+          <Plus className="mr-2 h-5 w-5" />
+          Add Drug
+        </Button>
+      </div>
     </div>
   );
 }

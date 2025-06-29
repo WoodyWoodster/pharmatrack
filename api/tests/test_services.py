@@ -200,9 +200,9 @@ class TestDrugService:
         self.service.create_drug(other_drug_data)
 
         categories = self.service.get_categories()
+        assert len(categories) == 2
         assert "Pain Relief" in categories
         assert "Vitamins" in categories
-        assert len(categories) == 2
 
     def test_get_low_stock_drugs(self, sample_drug):
         """Test getting low stock drugs."""
@@ -222,3 +222,118 @@ class TestDrugService:
         low_stock_drugs = self.service.get_low_stock_drugs()
         assert len(low_stock_drugs) == 1
         assert low_stock_drugs[0].quantity == 50
+
+    def test_batch_create_drugs_success(self):
+        """Test successful batch drug creation."""
+        drugs_data = [
+            DrugCreate(
+                sku="BATCH-001",
+                name="Batch Drug 1",
+                generic_name="batch_drug_1",
+                dosage="10mg",
+                quantity=100,
+                expiration_date="2025-12-31",
+                manufacturer="Batch Pharma",
+                price=29.99,
+                category="Antibiotic",
+            ),
+            DrugCreate(
+                sku="BATCH-002",
+                name="Batch Drug 2",
+                generic_name="batch_drug_2",
+                dosage="20mg",
+                quantity=150,
+                expiration_date="2025-11-30",
+                manufacturer="Batch Pharma",
+                price=39.99,
+                category="NSAID",
+            ),
+        ]
+
+        results = self.service.batch_create_drugs(drugs_data)
+
+        assert len(results) == 2
+        assert results[0].sku == "BATCH-001"
+        assert results[1].sku == "BATCH-002"
+        assert all(drug.id is not None for drug in results)
+
+    def test_batch_create_drugs_empty_list(self):
+        """Test batch creation with empty list raises error."""
+        with pytest.raises(HTTPException) as exc_info:
+            self.service.batch_create_drugs([])
+        assert exc_info.value.status_code == 400
+        assert "No drug data provided" in str(exc_info.value.detail)
+
+    def test_batch_create_drugs_duplicate_sku_in_batch(self):
+        """Test batch creation with duplicate SKUs within batch raises error."""
+        drugs_data = [
+            DrugCreate(
+                sku="DUP-001",
+                name="Duplicate Drug 1",
+                generic_name="duplicate_drug_1",
+                dosage="10mg",
+                quantity=100,
+                expiration_date="2025-12-31",
+                manufacturer="Dup Pharma",
+                price=29.99,
+                category="Antibiotic",
+            ),
+            DrugCreate(
+                sku="DUP-001",  # Same SKU
+                name="Duplicate Drug 2",
+                generic_name="duplicate_drug_2",
+                dosage="20mg",
+                quantity=150,
+                expiration_date="2025-11-30",
+                manufacturer="Dup Pharma",
+                price=39.99,
+                category="NSAID",
+            ),
+        ]
+
+        with pytest.raises(HTTPException) as exc_info:
+            self.service.batch_create_drugs(drugs_data)
+        assert exc_info.value.status_code == 400
+        assert "Duplicate SKU" in str(exc_info.value.detail)
+
+    def test_batch_create_drugs_existing_sku_conflict(self, sample_drug):
+        """Test batch creation with existing SKU raises error."""
+        drugs_data = [
+            DrugCreate(
+                sku=sample_drug.sku,
+                name="Conflicting Drug",
+                generic_name="conflicting_drug",
+                dosage="15mg",
+                quantity=75,
+                expiration_date="2025-12-31",
+                manufacturer="Conflict Pharma",
+                price=25.99,
+                category="Other",
+            ),
+        ]
+
+        with pytest.raises(HTTPException) as exc_info:
+            self.service.batch_create_drugs(drugs_data)
+        assert exc_info.value.status_code == 400
+        assert "already exists" in str(exc_info.value.detail)
+
+    def test_batch_create_drugs_invalid_expiration_date(self):
+        """Test batch creation with invalid expiration date raises error."""
+        drugs_data = [
+            DrugCreate(
+                sku="INVALID-001",
+                name="Invalid Drug",
+                generic_name="invalid_drug",
+                dosage="10mg",
+                quantity=100,
+                expiration_date="2020-01-01",
+                manufacturer="Invalid Pharma",
+                price=29.99,
+                category="Other",
+            ),
+        ]
+
+        with pytest.raises(HTTPException) as exc_info:
+            self.service.batch_create_drugs(drugs_data)
+        assert exc_info.value.status_code == 400
+        assert "cannot be in the past" in str(exc_info.value.detail)

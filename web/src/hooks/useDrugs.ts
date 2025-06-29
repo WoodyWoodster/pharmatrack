@@ -1,6 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { drugApi } from "@/services/api";
 import { CreateDrugRequest, UpdateDrugRequest } from "@/types/api";
+import { toast } from "sonner";
+
+interface DrugCreate {
+  sku: string;
+  name: string;
+  generic_name: string;
+  dosage: string;
+  quantity: number;
+  expiration_date: string;
+  manufacturer: string;
+  price: number;
+  category: string;
+}
 
 export const drugQueryKeys = {
   all: ["drugs"] as const,
@@ -68,7 +81,6 @@ export function useCreateDrug() {
   });
 }
 
-// Hook to update a drug
 export function useUpdateDrug() {
   const queryClient = useQueryClient();
 
@@ -81,13 +93,11 @@ export function useUpdateDrug() {
       drugData: UpdateDrugRequest;
     }) => drugApi.updateDrug(id, drugData),
     onSuccess: (updatedDrug) => {
-      // Update specific drug in cache
       queryClient.setQueryData(
         drugQueryKeys.detail(updatedDrug.id),
         updatedDrug
       );
 
-      // Invalidate lists to reflect changes
       queryClient.invalidateQueries({ queryKey: drugQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: drugQueryKeys.lowStock() });
       queryClient.invalidateQueries({ queryKey: drugQueryKeys.expiringSoon() });
@@ -95,20 +105,46 @@ export function useUpdateDrug() {
   });
 }
 
-// Hook to delete a drug
 export function useDeleteDrug() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: drugApi.deleteDrug,
     onSuccess: (_, deletedId) => {
-      // Remove from cache
       queryClient.removeQueries({ queryKey: drugQueryKeys.detail(deletedId) });
 
-      // Invalidate lists
       queryClient.invalidateQueries({ queryKey: drugQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: drugQueryKeys.lowStock() });
       queryClient.invalidateQueries({ queryKey: drugQueryKeys.expiringSoon() });
+    },
+  });
+}
+
+export function useBatchCreateDrugs() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (drugs: DrugCreate[]) => {
+      const drugRequests = drugs.map((drug) => ({
+        sku: drug.sku,
+        name: drug.name,
+        generic_name: drug.generic_name,
+        dosage: drug.dosage,
+        quantity: drug.quantity,
+        expiration_date: drug.expiration_date,
+        manufacturer: drug.manufacturer,
+        price: drug.price,
+        category: drug.category,
+      }));
+
+      return drugApi.batchCreateDrugs(drugRequests);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["drugs"] });
+      toast.success(`Successfully imported ${data.length} drugs`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to import drugs: ${error.message}`);
     },
   });
 }
