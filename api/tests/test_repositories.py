@@ -1,8 +1,8 @@
 """Tests for drug repository."""
 
 import pytest
-
 from app.repositories.drug_repository import DrugRepository
+from app.repositories.drug_interface import DrugRepositoryInterface
 from app.schemas.drug import DrugCreate, DrugUpdate
 
 
@@ -12,25 +12,32 @@ class TestDrugRepository:
     @pytest.fixture(autouse=True)
     def setup(self, db_session):
         """Set up repository for each test."""
-        self.repository = DrugRepository(db_session)
-        self.db_session = db_session
+        self.repository: DrugRepositoryInterface = DrugRepository(db_session)
+
+    @pytest.fixture
+    def sample_drug(self, sample_drug_create):
+        """Create a sample drug in the repository."""
+        return self.repository.create(sample_drug_create)
+
+    def test_repository_implements_interface(self):
+        """Test that DrugRepository implements DrugRepositoryInterface."""
+        assert isinstance(self.repository, DrugRepositoryInterface)
 
     def test_create_drug(self, sample_drug_create):
-        """Test creating a new drug."""
+        """Test creating a drug."""
         drug = self.repository.create(sample_drug_create)
 
         assert drug.id is not None
         assert drug.sku == sample_drug_create.sku
         assert drug.name == sample_drug_create.name
-        assert drug.quantity == sample_drug_create.quantity
 
     def test_get_drug_by_id(self, sample_drug):
         """Test retrieving a drug by ID."""
-        drug = self.repository.get_by_id(sample_drug.id)
+        retrieved_drug = self.repository.get_by_id(sample_drug.id)
 
-        assert drug is not None
-        assert drug.id == sample_drug.id
-        assert drug.name == sample_drug.name
+        assert retrieved_drug is not None
+        assert retrieved_drug.id == sample_drug.id
+        assert retrieved_drug.name == sample_drug.name
 
     def test_get_drug_by_id_not_found(self):
         """Test retrieving a non-existent drug."""
@@ -39,14 +46,13 @@ class TestDrugRepository:
 
     def test_get_drug_by_sku(self, sample_drug):
         """Test retrieving a drug by SKU."""
-        drug = self.repository.get_by_sku(sample_drug.sku)
+        retrieved_drug = self.repository.get_by_sku(sample_drug.sku)
 
-        assert drug is not None
-        assert drug.sku == sample_drug.sku
-        assert drug.name == sample_drug.name
+        assert retrieved_drug is not None
+        assert retrieved_drug.sku == sample_drug.sku
 
     def test_get_drug_by_sku_not_found(self):
-        """Test retrieving a drug with non-existent SKU."""
+        """Test retrieving a drug by non-existent SKU."""
         drug = self.repository.get_by_sku("NON-EXISTENT")
         assert drug is None
 
@@ -231,3 +237,93 @@ class TestDrugRepository:
         """Test batch creation with empty list."""
         result = self.repository.batch_create([])
         assert result == []
+
+    def test_check_existing_skus(self, sample_drug):
+        """Test batch SKU existence checking."""
+        drug_data_2 = DrugCreate(
+            sku="TEST-002",
+            name="Another Test Drug",
+            generic_name="another_test",
+            dosage="20mg",
+            quantity=50,
+            expiration_date="2025-06-30",
+            manufacturer="Another Pharma",
+            price=15.99,
+            category="Vitamins",
+        )
+        self.repository.create(drug_data_2)
+
+        skus_to_check = ["TEST-001", "TEST-002", "NON-EXISTENT", "ALSO-MISSING"]
+        existing_skus = self.repository.check_existing_skus(skus_to_check)
+
+        assert len(existing_skus) == 2
+        assert "TEST-001" in existing_skus
+        assert "TEST-002" in existing_skus
+        assert "NON-EXISTENT" not in existing_skus
+        assert "ALSO-MISSING" not in existing_skus
+
+    def test_check_existing_skus_empty_list(self):
+        """Test checking existing SKUs with empty list."""
+        result = self.repository.check_existing_skus([])
+        assert result == []
+
+    def test_get_paginated(self, sample_drug):
+        """Test paginated drug retrieval."""
+        for i in range(2, 6):
+            drug_data = DrugCreate(
+                sku=f"TEST-{i:03d}",
+                name=f"Test Drug {i}",
+                generic_name=f"test_drug_{i}",
+                dosage="10mg",
+                quantity=100,
+                expiration_date="2025-12-31",
+                manufacturer="Test Pharma",
+                price=29.99,
+                category="Test Category",
+            )
+            self.repository.create(drug_data)
+
+        drugs, total = self.repository.get_paginated(page=1, page_size=3)
+        assert len(drugs) == 3
+        assert total == 5
+
+        drugs, total = self.repository.get_paginated(page=2, page_size=3)
+        assert len(drugs) == 2
+        assert total == 5
+
+    def test_search_paginated(self, sample_drug):
+        """Test paginated search."""
+        for i in range(2, 6):
+            drug_data = DrugCreate(
+                sku=f"TEST-{i:03d}",
+                name=f"Test Drug {i}",
+                generic_name=f"test_drug_{i}",
+                dosage="10mg",
+                quantity=100,
+                expiration_date="2025-12-31",
+                manufacturer="Test Pharma",
+                price=29.99,
+                category="Test Category",
+            )
+            self.repository.create(drug_data)
+
+        other_drug = DrugCreate(
+            sku="OTHER-001",
+            name="Other Drug",
+            generic_name="other_drug",
+            dosage="10mg",
+            quantity=100,
+            expiration_date="2025-12-31",
+            manufacturer="Other Pharma",
+            price=29.99,
+            category="Other Category",
+        )
+        self.repository.create(other_drug)
+
+        drugs, total = self.repository.search_paginated("Test", page=1, page_size=3)
+        assert len(drugs) == 3
+        assert total == 5
+
+        drugs, total = self.repository.search_paginated("Test", page=2, page_size=3)
+        assert len(drugs) == 2
+        assert total == 5

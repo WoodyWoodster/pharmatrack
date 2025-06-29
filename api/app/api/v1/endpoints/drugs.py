@@ -2,15 +2,26 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.database import get_database_session
+from app.repositories.drug_repository import DrugRepository
+from app.repositories.drug_interface import DrugRepositoryInterface
 from app.services.drug_service import DrugService
 from app.schemas.drug import DrugCreate, DrugUpdate, DrugResponse
 
 router = APIRouter()
 
 
-def get_drug_service(db: Session = Depends(get_database_session)) -> DrugService:
-    """Dependency to get drug service"""
-    return DrugService(db)
+def get_drug_repository(
+    db: Session = Depends(get_database_session),
+) -> DrugRepositoryInterface:
+    """FastAPI dependency to get drug repository."""
+    return DrugRepository(db)
+
+
+def get_drug_service(
+    repository: DrugRepositoryInterface = Depends(get_drug_repository),
+) -> DrugService:
+    """FastAPI dependency to get drug service with repository injection."""
+    return DrugService(repository)
 
 
 @router.get("/", response_model=List[DrugResponse])

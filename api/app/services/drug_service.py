@@ -1,15 +1,13 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from app.repositories.drug_repository import DrugRepository
+from app.repositories.drug_interface import DrugRepositoryInterface
 from app.schemas.drug import DrugCreate, DrugUpdate, DrugResponse
-from app.models.drug import Drug
 from datetime import datetime
 
 
 class DrugService:
-    def __init__(self, db: Session):
-        self.repository = DrugRepository(db)
+    def __init__(self, repository: DrugRepositoryInterface):
+        self.repository = repository
 
     def get_all_drugs(self) -> List[DrugResponse]:
         """Get all drugs"""
@@ -79,21 +77,25 @@ class DrugService:
         if not drugs_data:
             raise HTTPException(status_code=400, detail="No drug data provided")
 
-        skus = []
+        skus = [drug_data.sku for drug_data in drugs_data]
+
+        seen_skus = set()
+        for sku in skus:
+            if sku in seen_skus:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Duplicate SKU '{sku}' in batch data",
+                )
+            seen_skus.add(sku)
+
+        existing_skus = self.repository.check_existing_skus(skus)
+        if existing_skus:
+            raise HTTPException(
+                status_code=400,
+                detail=f"SKUs already exist in database: {', '.join(existing_skus)}",
+            )
+
         for drug_data in drugs_data:
-            if self.repository.exists(drug_data.sku):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Drug with SKU '{drug_data.sku}' already exists",
-                )
-
-            if drug_data.sku in skus:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Duplicate SKU '{drug_data.sku}' in batch data",
-                )
-
-            skus.append(drug_data.sku)
             self._validate_expiration_date(drug_data.expiration_date)
 
         created_drugs = self.repository.batch_create(drugs_data)

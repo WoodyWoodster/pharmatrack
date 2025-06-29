@@ -356,7 +356,8 @@ class TestDrugAPI:
 
         response = client.post("/api/v1/drugs/batch", json=batch_data)
         assert response.status_code == 400
-        assert "already exists" in response.json()["detail"]
+        assert "already exist in database" in response.json()["detail"]
+        assert sample_drug_data["sku"] in response.json()["detail"]
 
     def test_batch_create_drugs_invalid_data(self, client):
         """Test batch creation with invalid drug data via API."""

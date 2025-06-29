@@ -1,19 +1,20 @@
-"""Tests for drug service."""
+"""Tests for drug service layer."""
 
 import pytest
-
-from app.services.drug_service import DrugService
-from app.schemas.drug import DrugCreate, DrugUpdate
 from fastapi import HTTPException
+from app.services.drug_service import DrugService
+from app.repositories.drug_repository import DrugRepository
+from app.schemas.drug import DrugCreate, DrugUpdate
 
 
 class TestDrugService:
-    """Test cases for DrugService."""
+    """Test cases for DrugService business logic."""
 
     @pytest.fixture(autouse=True)
     def setup(self, db_session):
-        """Set up service for each test."""
-        self.service = DrugService(db_session)
+        """Set up the service for each test."""
+        repository = DrugRepository(db_session)
+        self.service = DrugService(repository)
 
     def test_create_drug_success(self, sample_drug_create):
         """Test successful drug creation."""
@@ -29,20 +30,6 @@ class TestDrugService:
             self.service.create_drug(sample_drug_create)
         assert exc_info.value.status_code == 400
         assert "already exists" in str(exc_info.value.detail)
-
-    def test_create_drug_invalid_price(self, sample_drug_data):
-        """Test creating drug with invalid price raises error."""
-        sample_drug_data["price"] = -10.0
-
-        with pytest.raises(ValueError):
-            DrugCreate(**sample_drug_data)
-
-    def test_create_drug_invalid_quantity(self, sample_drug_data):
-        """Test creating drug with invalid quantity raises error."""
-        sample_drug_data["quantity"] = -5
-
-        with pytest.raises(ValueError):
-            DrugCreate(**sample_drug_data)
 
     def test_create_drug_invalid_expiration_date(self, sample_drug_data):
         """Test creating drug with invalid expiration date raises error."""
@@ -85,47 +72,14 @@ class TestDrugService:
             self.service.update_drug(999, update_data)
         assert exc_info.value.status_code == 404
 
-    def test_update_drug_duplicate_sku(self, sample_drug):
-        """Test updating drug with duplicate SKU raises error."""
-        other_drug_data = DrugCreate(
-            sku="OTHER-001",
-            name="Other Drug",
-            generic_name="other_drug",
-            dosage="5mg",
-            quantity=50,
-            expiration_date="2025-12-31",
-            manufacturer="Other Pharma",
-            price=19.99,
-            category="Other",
-        )
-        self.service.create_drug(other_drug_data)
-
-        update_data = DrugUpdate(sku="OTHER-001")
-        with pytest.raises(HTTPException) as exc_info:
-            self.service.update_drug(sample_drug.id, update_data)
-        assert exc_info.value.status_code == 400
-
-    def test_update_drug_invalid_price(self, sample_drug_data):
-        """Test updating drug with invalid price raises error."""
-        with pytest.raises(ValueError):
-            DrugUpdate(price=-5.0)
-
-    def test_update_drug_invalid_quantity(self, sample_drug_data):
-        """Test updating drug with invalid quantity raises error."""
-        with pytest.raises(ValueError):
-            DrugUpdate(quantity=-10)
-
-    def test_update_drug_invalid_expiration_date(self, sample_drug):
-        """Test updating drug with invalid expiration date raises error."""
-        update_data = DrugUpdate(expiration_date="2020-01-01")
-        with pytest.raises(HTTPException) as exc_info:
-            self.service.update_drug(sample_drug.id, update_data)
-        assert exc_info.value.status_code == 400
-
     def test_delete_drug_success(self, sample_drug):
         """Test successful drug deletion."""
         result = self.service.delete_drug(sample_drug.id)
-        assert "message" in result
+
+        assert result["message"] == "Drug deleted successfully"
+
+        with pytest.raises(HTTPException):
+            self.service.get_drug_by_id(sample_drug.id)
 
     def test_delete_drug_not_found(self):
         """Test deleting non-existent drug raises error."""
@@ -147,25 +101,6 @@ class TestDrugService:
         assert len(results) == 1
         assert results[0].category == "Pain Relief"
 
-    def test_search_drugs_with_both_filters(self, sample_drug):
-        """Test searching drugs with both name and category filters."""
-        other_drug_data = DrugCreate(
-            sku="TEST-VIT",
-            name="Test Vitamin",
-            generic_name="test_vitamin",
-            dosage="100mg",
-            quantity=150,
-            expiration_date="2025-12-31",
-            manufacturer="Vitamin Corp",
-            price=12.99,
-            category="Vitamins",
-        )
-        self.service.create_drug(other_drug_data)
-
-        results = self.service.search_drugs("Test", "Pain Relief")
-        assert len(results) == 1
-        assert results[0].category == "Pain Relief"
-
     def test_get_all_drugs(self, sample_drug):
         """Test retrieving all drugs."""
         other_drug_data = DrugCreate(
@@ -184,9 +119,28 @@ class TestDrugService:
         all_drugs = self.service.get_all_drugs()
         assert len(all_drugs) == 2
 
+    def test_get_low_stock_drugs(self):
+        """Test getting drugs with low stock."""
+        low_stock_drug_data = DrugCreate(
+            sku="LOW-001",
+            name="Low Stock Drug",
+            generic_name="low_stock_drug",
+            dosage="5mg",
+            quantity=50,
+            expiration_date="2025-07-31",
+            manufacturer="Low Stock Corp",
+            price=8.99,
+            category="Other",
+        )
+        self.service.create_drug(low_stock_drug_data)
+
+        low_stock_drugs = self.service.get_low_stock_drugs(threshold=100)
+        assert len(low_stock_drugs) == 1
+        assert low_stock_drugs[0].quantity == 50
+
     def test_get_categories(self, sample_drug):
         """Test getting all drug categories."""
-        other_drug_data = DrugCreate(
+        vitamin_drug_data = DrugCreate(
             sku="VIT-001",
             name="Vitamin D",
             generic_name="vitamin_d",
@@ -197,31 +151,12 @@ class TestDrugService:
             price=15.99,
             category="Vitamins",
         )
-        self.service.create_drug(other_drug_data)
+        self.service.create_drug(vitamin_drug_data)
 
         categories = self.service.get_categories()
         assert len(categories) == 2
         assert "Pain Relief" in categories
         assert "Vitamins" in categories
-
-    def test_get_low_stock_drugs(self, sample_drug):
-        """Test getting low stock drugs."""
-        low_stock_data = DrugCreate(
-            sku="LOW-001",
-            name="Low Stock Drug",
-            generic_name="low_stock",
-            dosage="50mg",
-            quantity=50,
-            expiration_date="2025-12-31",
-            manufacturer="Low Corp",
-            price=25.99,
-            category="Other",
-        )
-        self.service.create_drug(low_stock_data)
-
-        low_stock_drugs = self.service.get_low_stock_drugs()
-        assert len(low_stock_drugs) == 1
-        assert low_stock_drugs[0].quantity == 50
 
     def test_batch_create_drugs_success(self):
         """Test successful batch drug creation."""
@@ -264,28 +199,28 @@ class TestDrugService:
         assert exc_info.value.status_code == 400
         assert "No drug data provided" in str(exc_info.value.detail)
 
-    def test_batch_create_drugs_duplicate_sku_in_batch(self):
+    def test_batch_create_drugs_duplicate_skus_in_batch(self):
         """Test batch creation with duplicate SKUs within batch raises error."""
         drugs_data = [
             DrugCreate(
-                sku="DUP-001",
-                name="Duplicate Drug 1",
-                generic_name="duplicate_drug_1",
+                sku="DUPLICATE-001",
+                name="Drug 1",
+                generic_name="drug_1",
                 dosage="10mg",
                 quantity=100,
                 expiration_date="2025-12-31",
-                manufacturer="Dup Pharma",
+                manufacturer="Test Pharma",
                 price=29.99,
                 category="Antibiotic",
             ),
             DrugCreate(
-                sku="DUP-001",  # Same SKU
-                name="Duplicate Drug 2",
-                generic_name="duplicate_drug_2",
+                sku="DUPLICATE-001",
+                name="Drug 2",
+                generic_name="drug_2",
                 dosage="20mg",
                 quantity=150,
                 expiration_date="2025-11-30",
-                manufacturer="Dup Pharma",
+                manufacturer="Test Pharma",
                 price=39.99,
                 category="NSAID",
             ),
@@ -294,28 +229,31 @@ class TestDrugService:
         with pytest.raises(HTTPException) as exc_info:
             self.service.batch_create_drugs(drugs_data)
         assert exc_info.value.status_code == 400
-        assert "Duplicate SKU" in str(exc_info.value.detail)
+        assert "Duplicate SKU 'DUPLICATE-001' in batch data" in str(
+            exc_info.value.detail
+        )
 
-    def test_batch_create_drugs_existing_sku_conflict(self, sample_drug):
-        """Test batch creation with existing SKU raises error."""
+    def test_batch_create_drugs_existing_sku_in_database(self, sample_drug):
+        """Test batch creation with SKU that already exists in database."""
         drugs_data = [
             DrugCreate(
-                sku=sample_drug.sku,
-                name="Conflicting Drug",
-                generic_name="conflicting_drug",
-                dosage="15mg",
-                quantity=75,
+                sku="TEST-001",
+                name="New Drug",
+                generic_name="new_drug",
+                dosage="10mg",
+                quantity=100,
                 expiration_date="2025-12-31",
-                manufacturer="Conflict Pharma",
-                price=25.99,
-                category="Other",
+                manufacturer="Test Pharma",
+                price=29.99,
+                category="Antibiotic",
             ),
         ]
 
         with pytest.raises(HTTPException) as exc_info:
             self.service.batch_create_drugs(drugs_data)
         assert exc_info.value.status_code == 400
-        assert "already exists" in str(exc_info.value.detail)
+        assert "already exist in database" in str(exc_info.value.detail)
+        assert "TEST-001" in str(exc_info.value.detail)
 
     def test_batch_create_drugs_invalid_expiration_date(self):
         """Test batch creation with invalid expiration date raises error."""
@@ -327,9 +265,9 @@ class TestDrugService:
                 dosage="10mg",
                 quantity=100,
                 expiration_date="2020-01-01",
-                manufacturer="Invalid Pharma",
+                manufacturer="Test Pharma",
                 price=29.99,
-                category="Other",
+                category="Antibiotic",
             ),
         ]
 

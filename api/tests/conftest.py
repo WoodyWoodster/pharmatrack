@@ -8,12 +8,10 @@ from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
-os.environ["ENVIRONMENT"] = "test"
 
 from app.database import Base, get_database_session
-from app.models.drug import Drug
-from app.schemas.drug import DrugCreate
 from main import app
+from app.schemas.drug import DrugCreate
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -48,16 +46,25 @@ def db_session():
 
 @pytest.fixture(scope="function")
 def client(db_session):
-    """Create a test client with database override."""
-    app.dependency_overrides[get_database_session] = override_get_db
+    """Create a test client with database dependency override."""
+
+    def override_get_database_session():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_database_session] = override_get_database_session
+
     with TestClient(app) as test_client:
         yield test_client
+
     app.dependency_overrides.clear()
 
 
 @pytest.fixture
 def sample_drug_data():
-    """Sample drug data as dictionary for API tests."""
+    """Sample drug data for testing."""
     return {
         "sku": "TEST-001",
         "name": "Test Medication",
@@ -74,13 +81,15 @@ def sample_drug_data():
 
 @pytest.fixture
 def sample_drug_create(sample_drug_data):
-    """Sample drug data as Pydantic object for service/repository tests."""
+    """Sample DrugCreate schema for testing."""
     return DrugCreate(**sample_drug_data)
 
 
 @pytest.fixture
 def sample_drug(db_session, sample_drug_data):
     """Create a sample drug in the database."""
+    from app.models.drug import Drug
+
     drug = Drug(**sample_drug_data)
     db_session.add(drug)
     db_session.commit()
