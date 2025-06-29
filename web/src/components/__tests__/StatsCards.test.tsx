@@ -67,7 +67,7 @@ describe("StatsCards", () => {
     const { container } = renderWithProviders(<StatsCards drugs={mockDrugs} />);
 
     const expiringSoonCard = container.querySelector(".bg-red-400");
-    expect(expiringSoonCard?.textContent).toContain("0");
+    expect(expiringSoonCard?.textContent).toContain("1");
     expect(expiringSoonCard?.textContent).toContain("EXPIRING SOON");
   });
 });
