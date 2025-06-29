@@ -10,7 +10,7 @@ export function StatsCards({ drugs }: StatsCardsProps) {
   const lowStockCount = drugs.filter((drug) => drug.quantity < 100).length;
   const expiringSoonCount = drugs.filter(
     (drug) =>
-      new Date(drug.expirationDate) <
+      new Date(drug.expiration_date) <
       new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
   ).length;
 
