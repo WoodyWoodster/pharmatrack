@@ -49,6 +49,31 @@ interface BatchImportDrawerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const REQUIRED_FIELDS = [
+  "sku",
+  "name",
+  "generic_name",
+  "dosage",
+  "quantity",
+  "expiration_date",
+  "manufacturer",
+  "price",
+  "category",
+];
+
+const CATEGORIES = [
+  "Antibiotic",
+  "Pain Relief",
+  "ACE Inhibitor",
+  "Beta Blocker",
+  "Diuretic",
+  "Statin",
+  "Antacid",
+  "Antihistamine",
+  "Vitamins",
+  "Supplements",
+];
+
 export function BatchImportDrawer({
   isOpen,
   onOpenChange,
@@ -62,33 +87,8 @@ export function BatchImportDrawer({
 
   const batchCreateMutation = useBatchCreateDrugs();
 
-  const requiredFields = [
-    "sku",
-    "name",
-    "generic_name",
-    "dosage",
-    "quantity",
-    "expiration_date",
-    "manufacturer",
-    "price",
-    "category",
-  ];
-
-  const categories = [
-    "Antibiotic",
-    "Pain Relief",
-    "ACE Inhibitor",
-    "Beta Blocker",
-    "Diuretic",
-    "Statin",
-    "Antacid",
-    "Antihistamine",
-    "Vitamins",
-    "Supplements",
-  ];
-
   const downloadTemplate = () => {
-    const headers = requiredFields.join(",");
+    const headers = REQUIRED_FIELDS.join(",");
     const sampleRow = [
       "SAMPLE-001",
       "Sample Drug",
@@ -113,71 +113,74 @@ export function BatchImportDrawer({
     window.URL.revokeObjectURL(url);
   };
 
-  const validateRow = (row: DrugData, index: number): ValidationError[] => {
-    const errors: ValidationError[] = [];
+  const validateRow = useCallback(
+    (row: DrugData, index: number): ValidationError[] => {
+      const errors: ValidationError[] = [];
 
-    requiredFields.forEach((field) => {
+      REQUIRED_FIELDS.forEach((field) => {
+        if (
+          !row[field as keyof DrugData] ||
+          String(row[field as keyof DrugData]).trim() === ""
+        ) {
+          errors.push({
+            row: index + 1,
+            field,
+            message: `${field} is required`,
+          });
+        }
+      });
+
       if (
-        !row[field as keyof DrugData] ||
-        String(row[field as keyof DrugData]).trim() === ""
+        row.quantity &&
+        (isNaN(Number(row.quantity)) || Number(row.quantity) < 0)
       ) {
         errors.push({
           row: index + 1,
-          field,
-          message: `${field} is required`,
+          field: "quantity",
+          message: "Quantity must be a positive number",
         });
       }
-    });
 
-    if (
-      row.quantity &&
-      (isNaN(Number(row.quantity)) || Number(row.quantity) < 0)
-    ) {
-      errors.push({
-        row: index + 1,
-        field: "quantity",
-        message: "Quantity must be a positive number",
-      });
-    }
-
-    if (row.price && (isNaN(Number(row.price)) || Number(row.price) < 0)) {
-      errors.push({
-        row: index + 1,
-        field: "price",
-        message: "Price must be a positive number",
-      });
-    }
-
-    if (row.expiration_date) {
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (!dateRegex.test(row.expiration_date)) {
+      if (row.price && (isNaN(Number(row.price)) || Number(row.price) < 0)) {
         errors.push({
           row: index + 1,
-          field: "expiration_date",
-          message: "Date must be in YYYY-MM-DD format",
+          field: "price",
+          message: "Price must be a positive number",
         });
-      } else {
-        const date = new Date(row.expiration_date);
-        if (isNaN(date.getTime()) || date < new Date()) {
+      }
+
+      if (row.expiration_date) {
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(row.expiration_date)) {
           errors.push({
             row: index + 1,
             field: "expiration_date",
-            message: "Date must be valid and in the future",
+            message: "Date must be in YYYY-MM-DD format",
           });
+        } else {
+          const date = new Date(row.expiration_date);
+          if (isNaN(date.getTime()) || date < new Date()) {
+            errors.push({
+              row: index + 1,
+              field: "expiration_date",
+              message: "Date must be valid and in the future",
+            });
+          }
         }
       }
-    }
 
-    if (row.category && !categories.includes(row.category)) {
-      errors.push({
-        row: index + 1,
-        field: "category",
-        message: `Category must be one of: ${categories.join(", ")}`,
-      });
-    }
+      if (row.category && !CATEGORIES.includes(row.category)) {
+        errors.push({
+          row: index + 1,
+          field: "category",
+          message: `Category must be one of: ${CATEGORIES.join(", ")}`,
+        });
+      }
 
-    return errors;
-  };
+      return errors;
+    },
+    []
+  );
 
   const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
