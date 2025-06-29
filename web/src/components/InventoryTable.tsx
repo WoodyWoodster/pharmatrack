@@ -101,6 +101,7 @@ export function InventoryTable({
                           onClick={() => onEditDrug(drug)}
                           size="icon"
                           variant="ghost"
+                          aria-label={`Edit ${drug.name}`}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -109,6 +110,7 @@ export function InventoryTable({
                           size="icon"
                           variant="ghost"
                           className="text-destructive hover:text-destructive"
+                          aria-label={`Delete ${drug.name}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

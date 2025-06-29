@@ -14,13 +14,13 @@ describe("StatsCards", () => {
     const { getByText } = renderWithProviders(<StatsCards drugs={mockDrugs} />);
 
     expect(getByText("3")).toBeInTheDocument();
-    expect(getByText("TOTAL DRUGS")).toBeInTheDocument();
+    expect(getByText("Total Drugs")).toBeInTheDocument();
 
     expect(getByText("350")).toBeInTheDocument();
-    expect(getByText("TOTAL STOCK")).toBeInTheDocument();
+    expect(getByText("Total Stock")).toBeInTheDocument();
 
     expect(getByText("1")).toBeInTheDocument();
-    expect(getByText("LOW STOCK")).toBeInTheDocument();
+    expect(getByText("Low Stock")).toBeInTheDocument();
   });
 
   it("handles empty drugs array", () => {
@@ -31,8 +31,8 @@ describe("StatsCards", () => {
     const zeros = getAllByText("0");
     expect(zeros).toHaveLength(4);
 
-    expect(getByText("TOTAL DRUGS")).toBeInTheDocument();
-    expect(getByText("TOTAL STOCK")).toBeInTheDocument();
+    expect(getByText("Total Drugs")).toBeInTheDocument();
+    expect(getByText("Total Stock")).toBeInTheDocument();
   });
 
   it("calculates low stock correctly", () => {
@@ -46,7 +46,7 @@ describe("StatsCards", () => {
     const { getByText } = renderWithProviders(<StatsCards drugs={mockDrugs} />);
 
     expect(getByText("2")).toBeInTheDocument();
-    expect(getByText("LOW STOCK")).toBeInTheDocument();
+    expect(getByText("Low Stock")).toBeInTheDocument();
   });
 
   it("calculates expiring soon correctly", () => {
@@ -64,10 +64,13 @@ describe("StatsCards", () => {
       }),
     ];
 
-    const { container } = renderWithProviders(<StatsCards drugs={mockDrugs} />);
+    const { container, getByText } = renderWithProviders(
+      <StatsCards drugs={mockDrugs} />
+    );
 
-    const expiringSoonCard = container.querySelector(".bg-red-400");
-    expect(expiringSoonCard?.textContent).toContain("1");
-    expect(expiringSoonCard?.textContent).toContain("EXPIRING SOON");
+    const expiringSoonCard = container.querySelector(".bg-destructive\\/10");
+    expect(expiringSoonCard).toBeTruthy();
+    expect(getByText("1")).toBeInTheDocument();
+    expect(getByText("Expiring Soon")).toBeInTheDocument();
   });
 });

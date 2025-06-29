@@ -28,7 +28,7 @@ describe("SearchAndFilter", () => {
   it("renders add drug button", () => {
     renderWithProviders(<SearchAndFilter {...mockProps} />);
 
-    expect(screen.getByText("ADD DRUG")).toBeInTheDocument();
+    expect(screen.getByText("Add Drug")).toBeInTheDocument();
   });
 
   it("calls setSearchTerm when search input changes", async () => {
@@ -65,7 +65,7 @@ describe("SearchAndFilter", () => {
 
     renderWithProviders(<SearchAndFilter {...mockProps} />);
 
-    const addButton = screen.getByText("ADD DRUG");
+    const addButton = screen.getByText("Add Drug");
     await user.click(addButton);
 
     expect(mockProps.onAddDrug).toHaveBeenCalledTimes(1);

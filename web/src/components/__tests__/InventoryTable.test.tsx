@@ -21,16 +21,16 @@ describe("InventoryTable", () => {
   it("renders table headers", () => {
     renderWithProviders(<InventoryTable {...defaultProps} />);
 
-    expect(screen.getByText("DRUG NAME")).toBeInTheDocument();
+    expect(screen.getByText("Drug Name")).toBeInTheDocument();
     expect(screen.getByText("SKU")).toBeInTheDocument();
-    expect(screen.getByText("GENERIC")).toBeInTheDocument();
-    expect(screen.getByText("DOSAGE")).toBeInTheDocument();
-    expect(screen.getByText("STOCK")).toBeInTheDocument();
-    expect(screen.getByText("EXPIRES")).toBeInTheDocument();
-    expect(screen.getByText("MANUFACTURER")).toBeInTheDocument();
-    expect(screen.getByText("PRICE")).toBeInTheDocument();
-    expect(screen.getByText("CATEGORY")).toBeInTheDocument();
-    expect(screen.getByText("ACTIONS")).toBeInTheDocument();
+    expect(screen.getByText("Generic")).toBeInTheDocument();
+    expect(screen.getByText("Dosage")).toBeInTheDocument();
+    expect(screen.getByText("Stock")).toBeInTheDocument();
+    expect(screen.getByText("Expires")).toBeInTheDocument();
+    expect(screen.getByText("Manufacturer")).toBeInTheDocument();
+    expect(screen.getByText("Price")).toBeInTheDocument();
+    expect(screen.getByText("Category")).toBeInTheDocument();
+    expect(screen.getByText("Actions")).toBeInTheDocument();
   });
 
   it("displays inventory count in header", () => {
@@ -38,7 +38,7 @@ describe("InventoryTable", () => {
 
     renderWithProviders(<InventoryTable {...defaultProps} drugs={mockDrugs} />);
 
-    expect(screen.getByText("INVENTORY (2 items)")).toBeInTheDocument();
+    expect(screen.getByText("Inventory (2 items)")).toBeInTheDocument();
   });
 
   it("renders drug data correctly", () => {
@@ -70,26 +70,21 @@ describe("InventoryTable", () => {
   it("displays empty state correctly", () => {
     renderWithProviders(<InventoryTable {...defaultProps} />);
 
-    expect(screen.getByText("INVENTORY (0 items)")).toBeInTheDocument();
-    expect(screen.getByText("DRUG NAME")).toBeInTheDocument();
-
-    const tableBody = screen.getByRole("table").querySelector("tbody");
-    expect(tableBody).toBeInTheDocument();
-    expect(tableBody?.children).toHaveLength(0);
+    expect(screen.getByText("Inventory (0 items)")).toBeInTheDocument();
+    expect(screen.getByText("Drug Name")).toBeInTheDocument();
+    expect(screen.getByText("No drugs found.")).toBeInTheDocument();
   });
 
   it("calls onEditDrug when edit button is clicked", async () => {
     const user = userEvent.setup();
     const mockDrugs = [createMockDrug()];
 
-    const { container } = renderWithProviders(
-      <InventoryTable {...defaultProps} drugs={mockDrugs} />
-    );
+    renderWithProviders(<InventoryTable {...defaultProps} drugs={mockDrugs} />);
 
-    const editButton = container.querySelector(".bg-yellow-400");
+    const editButton = screen.getByLabelText(`Edit ${mockDrugs[0].name}`);
     expect(editButton).toBeInTheDocument();
 
-    await user.click(editButton!);
+    await user.click(editButton);
     expect(mockOnEditDrug).toHaveBeenCalledTimes(1);
     expect(mockOnEditDrug).toHaveBeenCalledWith(mockDrugs[0]);
   });
@@ -98,40 +93,34 @@ describe("InventoryTable", () => {
     const user = userEvent.setup();
     const mockDrugs = [createMockDrug()];
 
-    const { container } = renderWithProviders(
-      <InventoryTable {...defaultProps} drugs={mockDrugs} />
-    );
+    renderWithProviders(<InventoryTable {...defaultProps} drugs={mockDrugs} />);
 
-    const deleteButton = container.querySelector(".bg-red-400");
+    const deleteButton = screen.getByLabelText(`Delete ${mockDrugs[0].name}`);
     expect(deleteButton).toBeInTheDocument();
 
-    await user.click(deleteButton!);
+    await user.click(deleteButton);
     expect(mockOnDeleteDrug).toHaveBeenCalledTimes(1);
     expect(mockOnDeleteDrug).toHaveBeenCalledWith(mockDrugs[0]);
   });
 
-  it("displays low stock quantity with red text", () => {
+  it("displays low stock quantity with destructive styling", () => {
     const mockDrugs = [createMockDrug({ quantity: 50 })];
 
-    const { container } = renderWithProviders(
-      <InventoryTable {...defaultProps} drugs={mockDrugs} />
-    );
+    renderWithProviders(<InventoryTable {...defaultProps} drugs={mockDrugs} />);
 
     expect(screen.getByText("50")).toBeInTheDocument();
-    const quantityCell = container.querySelector(".text-red-600");
-    expect(quantityCell).toBeInTheDocument();
+    const quantityCell = screen.getByText("50").closest("td");
+    expect(quantityCell).toHaveClass("text-destructive");
   });
 
-  it("displays normal stock quantity with green text", () => {
+  it("displays normal stock quantity without destructive styling", () => {
     const mockDrugs = [createMockDrug({ quantity: 150 })];
 
-    const { container } = renderWithProviders(
-      <InventoryTable {...defaultProps} drugs={mockDrugs} />
-    );
+    renderWithProviders(<InventoryTable {...defaultProps} drugs={mockDrugs} />);
 
     expect(screen.getByText("150")).toBeInTheDocument();
-    const quantityCell = container.querySelector(".text-green-600");
-    expect(quantityCell).toBeInTheDocument();
+    const quantityCell = screen.getByText("150").closest("td");
+    expect(quantityCell).not.toHaveClass("text-destructive");
   });
 
   it("handles multiple drugs correctly", () => {
@@ -141,19 +130,19 @@ describe("InventoryTable", () => {
       createMockDrug({ id: 3, name: "Medicine C" }),
     ];
 
-    const { container } = renderWithProviders(
-      <InventoryTable {...defaultProps} drugs={mockDrugs} />
-    );
+    renderWithProviders(<InventoryTable {...defaultProps} drugs={mockDrugs} />);
 
     expect(screen.getByText("Medicine A")).toBeInTheDocument();
     expect(screen.getByText("Medicine B")).toBeInTheDocument();
     expect(screen.getByText("Medicine C")).toBeInTheDocument();
 
-    const editButtons = container.querySelectorAll(".bg-yellow-400");
-    const deleteButtons = container.querySelectorAll(".bg-red-400");
+    expect(screen.getByLabelText("Edit Medicine A")).toBeInTheDocument();
+    expect(screen.getByLabelText("Edit Medicine B")).toBeInTheDocument();
+    expect(screen.getByLabelText("Edit Medicine C")).toBeInTheDocument();
 
-    expect(editButtons).toHaveLength(3);
-    expect(deleteButtons).toHaveLength(3);
+    expect(screen.getByLabelText("Delete Medicine A")).toBeInTheDocument();
+    expect(screen.getByLabelText("Delete Medicine B")).toBeInTheDocument();
+    expect(screen.getByLabelText("Delete Medicine C")).toBeInTheDocument();
   });
 
   it("displays expiration date correctly", () => {

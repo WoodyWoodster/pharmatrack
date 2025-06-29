@@ -30,15 +30,14 @@ describe("DeleteConfirmationModal", () => {
       <DeleteConfirmationModal {...defaultProps} isOpen={true} />
     );
 
-    expect(screen.getByText("⚠️ DANGER ZONE ⚠️")).toBeInTheDocument();
+    expect(screen.getByText("Confirm Deletion")).toBeInTheDocument();
     expect(
-      screen.getByText("You are about to permanently delete:")
+      screen.getByText(
+        /This action cannot be undone\. This will permanently delete the drug/
+      )
     ).toBeInTheDocument();
     expect(
       screen.getByText(`${mockDrug.name} (${mockDrug.dosage})`)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("This action cannot be undone!")
     ).toBeInTheDocument();
   });
 
@@ -47,7 +46,7 @@ describe("DeleteConfirmationModal", () => {
       <DeleteConfirmationModal {...defaultProps} isOpen={false} />
     );
 
-    expect(screen.queryByText("⚠️ DANGER ZONE ⚠️")).not.toBeInTheDocument();
+    expect(screen.queryByText("Confirm Deletion")).not.toBeInTheDocument();
   });
 
   it("calls onDelete when delete button is clicked with correct confirmation", async () => {
@@ -61,7 +60,7 @@ describe("DeleteConfirmationModal", () => {
       />
     );
 
-    const deleteButton = screen.getByText("DELETE FOREVER");
+    const deleteButton = screen.getByText("Delete");
     expect(deleteButton).not.toBeDisabled();
 
     await user.click(deleteButton);
@@ -77,7 +76,7 @@ describe("DeleteConfirmationModal", () => {
       />
     );
 
-    const deleteButton = screen.getByText("DELETE FOREVER");
+    const deleteButton = screen.getByText("Delete");
     expect(deleteButton).toBeDisabled();
   });
 
@@ -88,7 +87,7 @@ describe("DeleteConfirmationModal", () => {
       <DeleteConfirmationModal {...defaultProps} isOpen={true} />
     );
 
-    const cancelButton = screen.getByText("CANCEL");
+    const cancelButton = screen.getByText("Cancel");
     await user.click(cancelButton);
 
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
@@ -125,9 +124,11 @@ describe("DeleteConfirmationModal", () => {
       <DeleteConfirmationModal {...defaultProps} isOpen={true} drug={null} />
     );
 
-    expect(screen.getByText("⚠️ DANGER ZONE ⚠️")).toBeInTheDocument();
+    expect(screen.getByText("Confirm Deletion")).toBeInTheDocument();
     expect(
-      screen.getByText("You are about to permanently delete:")
+      screen.getByText(
+        /This action cannot be undone\. This will permanently delete the drug/
+      )
     ).toBeInTheDocument();
   });
 });
