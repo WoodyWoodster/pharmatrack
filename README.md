@@ -1,6 +1,6 @@
 # PharmaTrack
 
-![CI](https://github.com/WoodyWoodster/pharmatrack/actions/workflows/CI/badge.svg)
+[![CI](https://github.com/WoodyWoodster/pharmatrack/actions/workflows/ci.yml/badge.svg)](https://github.com/WoodyWoodster/pharmatrack/actions/workflows/ci.yml)
 
 A pharmaceutical tracking application built with FastAPI and Next.js 15.
 
