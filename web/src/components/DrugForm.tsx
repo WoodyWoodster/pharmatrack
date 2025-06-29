@@ -100,6 +100,14 @@ export function DrugForm({
           />
         </div>
         <div>
+          <Label className="text-black font-bold">SKU</Label>
+          <Input
+            value={formData.sku || ""}
+            onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
+          />
+        </div>
+        <div>
           <Label className="text-black font-bold">Dosage</Label>
           <div className="flex gap-2">
             <Input
@@ -125,7 +133,6 @@ export function DrugForm({
           </div>
         </div>
         <div>
-          right
           <Label className="text-black font-bold">Quantity</Label>
           <Input
             type="number"

@@ -62,10 +62,11 @@ class DrugService:
 
     def create_drug(self, drug_data: DrugCreate) -> DrugResponse:
         """Create a new drug with validation"""
-        if self.repository.exists(drug_data.name):
+
+        if self.repository.exists(drug_data.sku):
             raise HTTPException(
                 status_code=400,
-                detail=f"Drug with name '{drug_data.name}' already exists",
+                detail=f"Drug with SKU '{drug_data.sku}' already exists",
             )
 
         self._validate_expiration_date(drug_data.expiration_date)
@@ -79,12 +80,11 @@ class DrugService:
         if not existing_drug:
             raise HTTPException(status_code=404, detail="Drug not found")
 
-        if drug_data.name and drug_data.name != existing_drug.name:
-            if self.repository.exists(drug_data.name, exclude_id=drug_id):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Drug with name '{drug_data.name}' already exists",
-                )
+        if drug_data.sku and drug_data.sku == existing_drug.sku:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Drug with SKU '{drug_data.sku}' already exists",
+            )
 
         if drug_data.expiration_date:
             self._validate_expiration_date(drug_data.expiration_date)

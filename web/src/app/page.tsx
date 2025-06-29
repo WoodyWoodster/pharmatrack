@@ -44,6 +44,7 @@ export default function PharmacyInventory() {
 
   const handleAdd = async () => {
     if (
+      formData.sku &&
       formData.name &&
       formData.generic_name &&
       formData.dosage &&
@@ -55,6 +56,7 @@ export default function PharmacyInventory() {
     ) {
       try {
         await createDrugMutation.mutateAsync({
+          sku: formData.sku,
           name: formData.name,
           generic_name: formData.generic_name,
           dosage: formData.dosage,

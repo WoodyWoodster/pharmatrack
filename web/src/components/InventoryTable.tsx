@@ -54,6 +54,9 @@ export function InventoryTable({
                   DRUG NAME
                 </TableHead>
                 <TableHead className="font-black text-black border-r-2 border-black">
+                  SKU
+                </TableHead>
+                <TableHead className="font-black text-black border-r-2 border-black">
                   GENERIC
                 </TableHead>
                 <TableHead className="font-black text-black border-r-2 border-black">
@@ -85,6 +88,9 @@ export function InventoryTable({
                 >
                   <TableCell className="font-bold border-r-2 border-black">
                     {drug.name}
+                  </TableCell>
+                  <TableCell className="border-r-2 border-black text-gray-600">
+                    {drug.sku || "—"}
                   </TableCell>
                   <TableCell className="border-r-2 border-black">
                     {drug.generic_name}

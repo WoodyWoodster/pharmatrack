@@ -5,6 +5,7 @@ from datetime import datetime
 
 class DrugBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
+    sku: str = Field(..., min_length=1, max_length=100)
     generic_name: str = Field(..., min_length=1, max_length=100)
     dosage: str = Field(..., min_length=1, max_length=50)
     quantity: int = Field(..., ge=0)
@@ -20,6 +21,7 @@ class DrugCreate(DrugBase):
 
 
 class DrugUpdate(BaseModel):
+    sku: Optional[str] = Field(None, max_length=100)
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     generic_name: Optional[str] = Field(None, min_length=1, max_length=100)
     dosage: Optional[str] = Field(None, min_length=1, max_length=50)
@@ -33,6 +35,7 @@ class DrugUpdate(BaseModel):
 
 class DrugResponse(DrugBase):
     id: int
+    sku: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

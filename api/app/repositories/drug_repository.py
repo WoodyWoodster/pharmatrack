@@ -10,11 +10,15 @@ class DrugRepository:
 
     def get_all(self) -> List[Drug]:
         """Get all drugs from the database"""
-        return self.db.query(Drug).all()
+        return self.db.query(Drug).order_by(Drug.created_at.desc()).all()
 
     def get_by_id(self, drug_id: int) -> Optional[Drug]:
         """Get a drug by ID"""
         return self.db.query(Drug).filter(Drug.id == drug_id).first()
+
+    def get_by_sku(self, sku: str) -> Optional[Drug]:
+        """Get a drug by SKU"""
+        return self.db.query(Drug).filter(Drug.sku == sku).first()
 
     def get_by_name(self, name: str) -> Optional[Drug]:
         """Get a drug by name"""
@@ -55,6 +59,9 @@ class DrugRepository:
         if not db_drug:
             return None
 
+        if drug_data.sku == db_drug.sku:
+            raise ValueError("SKU already exists")
+
         update_data = drug_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_drug, field, value)
@@ -73,9 +80,7 @@ class DrugRepository:
         self.db.commit()
         return True
 
-    def exists(self, name: str, exclude_id: Optional[int] = None) -> bool:
-        """Check if a drug with the given name already exists"""
-        query = self.db.query(Drug).filter(Drug.name == name)
-        if exclude_id:
-            query = query.filter(Drug.id != exclude_id)
+    def exists(self, sku: str) -> bool:
+        """Check if a drug with the given SKU already exists"""
+        query = self.db.query(Drug).filter(Drug.sku == sku)
         return query.first() is not None

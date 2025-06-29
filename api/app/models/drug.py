@@ -7,6 +7,7 @@ class Drug(Base):
     __tablename__ = "drugs"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    sku = Column(String(100), nullable=True, unique=True, index=True)
     name = Column(String(100), nullable=False, index=True)
     generic_name = Column(String(100), nullable=False)
     dosage = Column(String(50), nullable=False)

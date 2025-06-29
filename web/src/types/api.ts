@@ -1,6 +1,7 @@
 import { Drug } from "./drug";
 
 export interface CreateDrugRequest {
+  sku: string;
   name: string;
   generic_name: string;
   dosage: string;
@@ -13,6 +14,7 @@ export interface CreateDrugRequest {
 }
 
 export interface UpdateDrugRequest {
+  sku?: string;
   name?: string;
   generic_name?: string;
   dosage?: string;
