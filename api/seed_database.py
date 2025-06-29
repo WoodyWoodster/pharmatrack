@@ -66,6 +66,7 @@ def seed_database():
             Drug(
                 name="Amoxicillin",
                 generic_name="Amoxicillin",
+                sku="AMOX-001",
                 dosage="500mg",
                 quantity=150,
                 expiration_date=date(2025, 8, 15),
@@ -77,6 +78,7 @@ def seed_database():
             Drug(
                 name="Lisinopril",
                 generic_name="Lisinopril",
+                sku="LISI-001",
                 dosage="10mg",
                 quantity=200,
                 expiration_date=date(2025, 12, 1),
@@ -88,6 +90,7 @@ def seed_database():
             Drug(
                 name="Metformin",
                 generic_name="Metformin HCl",
+                sku="METF-001",
                 dosage="850mg",
                 quantity=75,
                 expiration_date=date(2025, 6, 30),
@@ -99,6 +102,7 @@ def seed_database():
             Drug(
                 name="Ibuprofen",
                 generic_name="Ibuprofen",
+                sku="IBUP-001",
                 dosage="200mg",
                 quantity=300,
                 expiration_date=date(2026, 3, 20),
@@ -110,6 +114,7 @@ def seed_database():
             Drug(
                 name="Acetaminophen",
                 generic_name="Acetaminophen",
+                sku="ACET-001",
                 dosage="500mg",
                 quantity=250,
                 expiration_date=date(2025, 11, 15),
@@ -121,6 +126,7 @@ def seed_database():
             Drug(
                 name="Amlodipine",
                 generic_name="Amlodipine Besylate",
+                sku="AMLO-001",
                 dosage="5mg",
                 quantity=80,
                 expiration_date=date(2025, 9, 10),
@@ -132,6 +138,7 @@ def seed_database():
             Drug(
                 name="Atorvastatin",
                 generic_name="Atorvastatin Calcium",
+                sku="ATOR-001",
                 dosage="20mg",
                 quantity=120,
                 expiration_date=date(2025, 10, 5),
@@ -143,6 +150,7 @@ def seed_database():
             Drug(
                 name="Omeprazole",
                 generic_name="Omeprazole",
+                sku="OMEP-001",
                 dosage="20mg",
                 quantity=90,
                 expiration_date=date(2025, 7, 20),
