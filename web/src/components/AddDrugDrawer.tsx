@@ -24,18 +24,15 @@ export function AddDrugDrawer({
 }: AddDrugDrawerProps) {
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className="border-4 border-black bg-white">
-        <DrawerHeader className="bg-green-400 border-b-4 border-black">
-          <DrawerTitle className="text-2xl font-black text-black">
-            ADD NEW DRUG
-          </DrawerTitle>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Add New Drug</DrawerTitle>
         </DrawerHeader>
         <DrugForm
           formData={formData}
           setFormData={setFormData}
           onSubmit={onAdd}
-          submitText="ADD DRUG TO INVENTORY"
-          submitButtonClass="bg-green-400 hover:bg-green-500 text-black"
+          submitText="Add Drug"
         />
       </DrawerContent>
     </Drawer>

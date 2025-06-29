@@ -1,5 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Drug } from "@/types/drug";
+import { Package, Pill, AlertTriangle, CalendarOff } from "lucide-react";
 
 interface StatsCardsProps {
   drugs: Drug[];
@@ -15,31 +16,41 @@ export function StatsCards({ drugs }: StatsCardsProps) {
   ).length;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <Card className="border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-blue-400">
-        <CardContent className="p-6 text-center">
-          <div className="text-3xl font-black text-black">{drugs.length}</div>
-          <div className="text-lg font-bold text-black">TOTAL DRUGS</div>
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Drugs</CardTitle>
+          <Pill className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{drugs.length}</div>
         </CardContent>
       </Card>
-      <Card className="border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-green-400">
-        <CardContent className="p-6 text-center">
-          <div className="text-3xl font-black text-black">{totalStock}</div>
-          <div className="text-lg font-bold text-black">TOTAL STOCK</div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Stock</CardTitle>
+          <Package className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{totalStock}</div>
         </CardContent>
       </Card>
-      <Card className="border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-purple-400">
-        <CardContent className="p-6 text-center">
-          <div className="text-3xl font-black text-black">{lowStockCount}</div>
-          <div className="text-lg font-bold text-black">LOW STOCK</div>
+      <Card className="border-yellow-500/50 bg-yellow-500/10">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
+          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{lowStockCount}</div>
         </CardContent>
       </Card>
-      <Card className="border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-red-400">
-        <CardContent className="p-6 text-center">
-          <div className="text-3xl font-black text-black">
-            {expiringSoonCount}
-          </div>
-          <div className="text-lg font-bold text-black">EXPIRING SOON</div>
+      <Card className="border-destructive/50 bg-destructive/10">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
+          <CalendarOff className="h-4 w-4 text-destructive" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{expiringSoonCount}</div>
         </CardContent>
       </Card>
     </div>

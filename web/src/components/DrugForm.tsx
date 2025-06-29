@@ -17,7 +17,7 @@ interface DrugFormProps {
   setFormData: (data: Partial<Drug>) => void;
   onSubmit: () => void;
   submitText: string;
-  submitButtonClass: string;
+  submitButtonClass?: string;
 }
 
 const dosageUnits = [
@@ -76,18 +76,17 @@ export function DrugForm({
   };
 
   return (
-    <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4 overflow-y-auto p-6 max-h-[70vh]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <Label className="text-black font-bold">Drug Name</Label>
+          <Label>Drug Name</Label>
           <Input
             value={formData.name || ""}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
           />
         </div>
         <div>
-          <Label className="text-black font-bold">Generic Name</Label>
+          <Label>Generic Name</Label>
           <Input
             value={formData.generic_name || ""}
             onChange={(e) =>
@@ -96,19 +95,17 @@ export function DrugForm({
                 generic_name: e.target.value,
               })
             }
-            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
           />
         </div>
         <div>
-          <Label className="text-black font-bold">SKU</Label>
+          <Label>SKU</Label>
           <Input
             value={formData.sku || ""}
             onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
           />
         </div>
         <div>
-          <Label className="text-black font-bold">Dosage</Label>
+          <Label>Dosage</Label>
           <div className="flex gap-2">
             <Input
               type="number"
@@ -116,15 +113,15 @@ export function DrugForm({
               placeholder="Amount"
               value={dosageValue}
               onChange={handleDosageValueChange}
-              className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold flex-1"
+              className="flex-1"
             />
             <Select value={dosageUnit} onValueChange={handleDosageUnitChange}>
-              <SelectTrigger className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold w-24">
+              <SelectTrigger className="w-24">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="border-4 border-black bg-white">
+              <SelectContent>
                 {dosageUnits.map((unit) => (
-                  <SelectItem key={unit} value={unit} className="font-bold">
+                  <SelectItem key={unit} value={unit}>
                     {unit}
                   </SelectItem>
                 ))}
@@ -133,7 +130,7 @@ export function DrugForm({
           </div>
         </div>
         <div>
-          <Label className="text-black font-bold">Quantity</Label>
+          <Label>Quantity</Label>
           <Input
             type="number"
             value={formData.quantity || ""}
@@ -143,11 +140,10 @@ export function DrugForm({
                 quantity: Number.parseInt(e.target.value),
               })
             }
-            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
           />
         </div>
         <div>
-          <Label className="text-black font-bold">Expiration Date</Label>
+          <Label>Expiration Date</Label>
           <Input
             type="date"
             value={formData.expiration_date || ""}
@@ -157,11 +153,10 @@ export function DrugForm({
                 expiration_date: e.target.value,
               })
             }
-            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
           />
         </div>
         <div>
-          <Label className="text-black font-bold">Manufacturer</Label>
+          <Label>Manufacturer</Label>
           <Input
             value={formData.manufacturer || ""}
             onChange={(e) =>
@@ -170,11 +165,10 @@ export function DrugForm({
                 manufacturer: e.target.value,
               })
             }
-            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
           />
         </div>
         <div>
-          <Label className="text-black font-bold">Price ($)</Label>
+          <Label>Price ($)</Label>
           <Input
             type="number"
             step="0.01"
@@ -185,27 +179,22 @@ export function DrugForm({
                 price: Number.parseFloat(e.target.value),
               })
             }
-            className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
           />
         </div>
         <div>
-          <Label className="text-black font-bold">Category</Label>
+          <Label>Category</Label>
           <Select
             value={formData.category || ""}
             onValueChange={(value) =>
               setFormData({ ...formData, category: value })
             }
           >
-            <SelectTrigger className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold">
+            <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
-            <SelectContent className="border-4 border-black bg-white">
+            <SelectContent>
               {categories.slice(1).map((category) => (
-                <SelectItem
-                  key={category}
-                  value={category}
-                  className="font-bold"
-                >
+                <SelectItem key={category} value={category}>
                   {category}
                 </SelectItem>
               ))}
@@ -214,7 +203,7 @@ export function DrugForm({
         </div>
       </div>
       <div>
-        <Label className="text-black font-bold">Description</Label>
+        <Label>Description</Label>
         <Textarea
           value={formData.description || ""}
           onChange={(e) =>
@@ -223,14 +212,10 @@ export function DrugForm({
               description: e.target.value,
             })
           }
-          className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
           rows={3}
         />
       </div>
-      <Button
-        onClick={onSubmit}
-        className={`w-full ${submitButtonClass} border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-lg py-3`}
-      >
+      <Button onClick={onSubmit} className={`w-full ${submitButtonClass}`}>
         {submitText}
       </Button>
     </div>

@@ -26,37 +26,34 @@ export function SearchAndFilter({
   onAddDrug,
 }: SearchAndFilterProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-      <div className="flex flex-col md:flex-row gap-4 flex-1">
+    <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
+      <div className="flex flex-1 flex-col gap-2 md:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black" />
+          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search drugs, generics, or manufacturers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white text-black placeholder:text-gray-600 font-bold"
+            className="pl-10"
           />
         </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full md:w-48 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white font-bold">
-            <Filter className="w-4 h-4 mr-2" />
+          <SelectTrigger className="w-full md:w-48">
+            <Filter className="mr-2 h-4 w-4" />
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="border-4 border-black bg-white">
+          <SelectContent>
             {categories.map((category) => (
-              <SelectItem key={category} value={category} className="font-bold">
+              <SelectItem key={category} value={category}>
                 {category}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      <Button
-        onClick={onAddDrug}
-        className="bg-green-400 hover:bg-green-500 text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-lg px-6 py-3"
-      >
-        <Plus className="w-5 h-5 mr-2" />
-        ADD DRUG
+      <Button onClick={onAddDrug}>
+        <Plus className="mr-2 h-5 w-5" />
+        Add Drug
       </Button>
     </div>
   );

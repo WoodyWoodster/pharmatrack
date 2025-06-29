@@ -145,18 +145,20 @@ export default function PharmacyInventory() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-yellow-300 p-6 flex items-center justify-center">
-        <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
-          <CardContent className="p-6 text-center">
-            <h2 className="text-2xl font-black text-red-600 mb-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl text-destructive">
               Error Loading Data
-            </h2>
-            <p className="text-black">
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 text-center">
+            <p>
               {error instanceof Error
                 ? error.message
                 : "Failed to connect to the server"}
             </p>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="mt-2 text-sm text-muted-foreground">
               Make sure the API server is running on port 8000
             </p>
           </CardContent>
@@ -166,61 +168,60 @@ export default function PharmacyInventory() {
   }
 
   return (
-    <div className="min-h-screen bg-yellow-300 p-6">
-      <div className="max-w-7xl mx-auto">
-        <Card className="mb-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
-          <CardHeader className="bg-red-400 border-b-4 border-black">
-            <CardTitle className="text-4xl font-black text-black flex items-center gap-3">
-              <Pill className="w-10 h-10" />
-              Pharmatrack{" "}
-              {isLoading && <span className="text-sm">Loading...</span>}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <SearchAndFilter
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              onAddDrug={handleAddDrugClick}
-            />
-          </CardContent>
-        </Card>
-
-        <StatsCards drugs={drugs} />
-
-        <InventoryTable
-          drugs={drugs}
-          onEditDrug={openEditDrawer}
-          onDeleteDrug={openDeleteModal}
-        />
-
-        <AddDrugDrawer
-          isOpen={isAddDrawerOpen}
-          onOpenChange={setIsAddDrawerOpen}
-          formData={formData}
-          setFormData={setFormData}
-          onAdd={handleAdd}
-        />
-
-        <EditDrugDrawer
-          isOpen={isEditDrawerOpen}
-          onOpenChange={setIsEditDrawerOpen}
-          formData={formData}
-          setFormData={setFormData}
-          onEdit={handleEdit}
-        />
-
-        <DeleteConfirmationModal
-          isOpen={isDeleteModalOpen}
-          onOpenChange={setIsDeleteModalOpen}
-          drug={deletingDrug}
-          confirmText={confirmText}
-          setConfirmText={setConfirmText}
-          onDelete={handleDelete}
-          onCancel={handleDeleteCancel}
-        />
-      </div>
+    <div className="flex h-screen w-full flex-col bg-muted/40">
+      <header className="flex h-16 items-center justify-between border-b bg-background px-4 md:px-6">
+        <div className="flex items-center gap-3">
+          <Pill className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold text-foreground">
+            PharmaTrack{" "}
+            {isLoading && (
+              <span className="text-sm font-normal text-muted-foreground">
+                Loading...
+              </span>
+            )}
+          </h1>
+        </div>
+      </header>
+      <main className="flex-1 overflow-auto p-4">
+        <div className="grid gap-4">
+          <SearchAndFilter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            onAddDrug={handleAddDrugClick}
+          />
+          <StatsCards drugs={drugs} />
+          <InventoryTable
+            drugs={drugs}
+            onEditDrug={openEditDrawer}
+            onDeleteDrug={openDeleteModal}
+          />
+        </div>
+      </main>
+      <AddDrugDrawer
+        isOpen={isAddDrawerOpen}
+        onOpenChange={setIsAddDrawerOpen}
+        formData={formData}
+        setFormData={setFormData}
+        onAdd={handleAdd}
+      />
+      <EditDrugDrawer
+        isOpen={isEditDrawerOpen}
+        onOpenChange={setIsEditDrawerOpen}
+        formData={formData}
+        setFormData={setFormData}
+        onEdit={handleEdit}
+      />
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        drug={deletingDrug}
+        confirmText={confirmText}
+        setConfirmText={setConfirmText}
+        onDelete={handleDelete}
+        onCancel={handleDeleteCancel}
+      />
     </div>
   );
 }

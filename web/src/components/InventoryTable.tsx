@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Edit, Trash2 } from "lucide-react";
 import { Drug } from "@/types/drug";
+import { cn } from "@/lib/utils";
 
 interface InventoryTableProps {
   drugs: Drug[];
@@ -23,122 +24,108 @@ export function InventoryTable({
   onEditDrug,
   onDeleteDrug,
 }: InventoryTableProps) {
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      Antibiotic: "bg-red-400 text-black border-2 border-black",
-      "ACE Inhibitor": "bg-blue-400 text-black border-2 border-black",
-      Antidiabetic: "bg-green-400 text-black border-2 border-black",
-      NSAID: "bg-yellow-400 text-black border-2 border-black",
-      Analgesic: "bg-purple-400 text-black border-2 border-black",
-      Antihypertensive: "bg-pink-400 text-black border-2 border-black",
+  const getCategoryBadgeClass = (category: string) => {
+    const colorMap: { [key: string]: string } = {
+      Antibiotic: "bg-red-100 text-red-800 border-red-200 hover:bg-red-100",
+      "ACE Inhibitor":
+        "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
+      Antidiabetic:
+        "bg-green-100 text-green-800 border-green-200 hover:bg-green-100",
+      NSAID:
+        "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
+      Analgesic:
+        "bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100",
+      Antihypertensive:
+        "bg-pink-100 text-pink-800 border-pink-200 hover:bg-pink-100",
     };
-    return (
-      colors[category as keyof typeof colors] ||
-      "bg-gray-400 text-black border-2 border-black"
-    );
+    return colorMap[category] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
   return (
-    <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white">
-      <CardHeader className="bg-blue-400 border-b-4 border-black">
-        <CardTitle className="text-2xl font-black text-black">
-          INVENTORY ({drugs.length} items)
-        </CardTitle>
+    <Card>
+      <CardHeader>
+        <CardTitle>Inventory ({drugs.length} items)</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-b-4 border-black bg-gray-200">
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  DRUG NAME
-                </TableHead>
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  SKU
-                </TableHead>
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  GENERIC
-                </TableHead>
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  DOSAGE
-                </TableHead>
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  STOCK
-                </TableHead>
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  EXPIRES
-                </TableHead>
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  MANUFACTURER
-                </TableHead>
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  PRICE
-                </TableHead>
-                <TableHead className="font-black text-black border-r-2 border-black">
-                  CATEGORY
-                </TableHead>
-                <TableHead className="font-black text-black">ACTIONS</TableHead>
+              <TableRow>
+                <TableHead>Drug Name</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Generic</TableHead>
+                <TableHead>Dosage</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Expires</TableHead>
+                <TableHead>Manufacturer</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {drugs.map((drug) => (
-                <TableRow
-                  key={drug.id}
-                  className="border-b-2 border-black hover:bg-yellow-100"
-                >
-                  <TableCell className="font-bold border-r-2 border-black">
-                    {drug.name}
-                  </TableCell>
-                  <TableCell className="border-r-2 border-black text-gray-600">
-                    {drug.sku || "—"}
-                  </TableCell>
-                  <TableCell className="border-r-2 border-black">
-                    {drug.generic_name}
-                  </TableCell>
-                  <TableCell className="border-r-2 border-black">
-                    {drug.dosage}
-                  </TableCell>
+              {drugs.length > 0 ? (
+                drugs.map((drug) => (
+                  <TableRow key={drug.id}>
+                    <TableCell className="font-medium">{drug.name}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {drug.sku || "—"}
+                    </TableCell>
+                    <TableCell>{drug.generic_name}</TableCell>
+                    <TableCell>{drug.dosage}</TableCell>
+                    <TableCell
+                      className={
+                        drug.quantity < 100
+                          ? "text-destructive font-bold"
+                          : "font-bold"
+                      }
+                    >
+                      {drug.quantity}
+                    </TableCell>
+                    <TableCell>{drug.expiration_date}</TableCell>
+                    <TableCell>{drug.manufacturer}</TableCell>
+                    <TableCell className="font-medium">
+                      ${drug.price.toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(getCategoryBadgeClass(drug.category))}
+                      >
+                        {drug.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => onEditDrug(drug)}
+                          size="icon"
+                          variant="ghost"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => onDeleteDrug(drug)}
+                          size="icon"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
                   <TableCell
-                    className={`border-r-2 border-black font-bold ${
-                      drug.quantity < 100 ? "text-red-600" : "text-green-600"
-                    }`}
+                    colSpan={10}
+                    className="h-24 text-center text-muted-foreground"
                   >
-                    {drug.quantity}
-                  </TableCell>
-                  <TableCell className="border-r-2 border-black">
-                    {drug.expiration_date}
-                  </TableCell>
-                  <TableCell className="border-r-2 border-black">
-                    {drug.manufacturer}
-                  </TableCell>
-                  <TableCell className="border-r-2 border-black font-bold">
-                    ${drug.price.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="border-r-2 border-black">
-                    <Badge className={getCategoryColor(drug.category)}>
-                      {drug.category}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => onEditDrug(drug)}
-                        size="sm"
-                        className="bg-yellow-400 hover:bg-yellow-500 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        onClick={() => onDeleteDrug(drug)}
-                        size="sm"
-                        className="bg-red-400 hover:bg-red-500 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    No drugs found.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
