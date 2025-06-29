@@ -59,8 +59,10 @@ class DrugRepository:
         if not db_drug:
             return None
 
-        if drug_data.sku == db_drug.sku:
-            raise ValueError("SKU already exists")
+        if drug_data.sku and drug_data.sku != db_drug.sku:
+            existing_drug_with_sku = self.get_by_sku(drug_data.sku)
+            if existing_drug_with_sku and existing_drug_with_sku.id != drug_id:
+                raise ValueError("SKU already exists")
 
         update_data = drug_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():

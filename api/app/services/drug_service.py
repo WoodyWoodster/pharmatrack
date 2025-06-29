@@ -80,18 +80,20 @@ class DrugService:
         if not existing_drug:
             raise HTTPException(status_code=404, detail="Drug not found")
 
-        if drug_data.sku and drug_data.sku == existing_drug.sku:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Drug with SKU '{drug_data.sku}' already exists",
-            )
-
         if drug_data.expiration_date:
             self._validate_expiration_date(drug_data.expiration_date)
 
-        updated_drug = self.repository.update(drug_id, drug_data)
-        if not updated_drug:
-            raise HTTPException(status_code=404, detail="Drug not found")
+        try:
+            updated_drug = self.repository.update(drug_id, drug_data)
+            if not updated_drug:
+                raise HTTPException(status_code=404, detail="Drug not found")
+        except ValueError as e:
+            if "SKU already exists" in str(e):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Drug with SKU '{drug_data.sku}' already exists",
+                )
+            raise
 
         return DrugResponse.model_validate(updated_drug)
 
