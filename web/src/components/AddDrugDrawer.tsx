@@ -13,6 +13,7 @@ interface AddDrugDrawerProps {
   formData: Partial<Drug>;
   setFormData: (data: Partial<Drug>) => void;
   onAdd: () => void;
+  validationErrors?: string[];
 }
 
 export function AddDrugDrawer({
@@ -21,6 +22,7 @@ export function AddDrugDrawer({
   formData,
   setFormData,
   onAdd,
+  validationErrors,
 }: AddDrugDrawerProps) {
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -33,6 +35,7 @@ export function AddDrugDrawer({
           setFormData={setFormData}
           onSubmit={onAdd}
           submitText="Add Drug"
+          validationErrors={validationErrors}
         />
       </DrawerContent>
     </Drawer>

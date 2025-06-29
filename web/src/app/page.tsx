@@ -18,6 +18,7 @@ import {
 } from "@/hooks/useDrugs";
 import { Drug } from "@/types/drug";
 import { toast } from "sonner";
+import { extractValidationErrors } from "@/lib/utils";
 
 export default function PharmacyInventory() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,6 +31,7 @@ export default function PharmacyInventory() {
   const [deletingDrug, setDeletingDrug] = useState<Drug | null>(null);
   const [confirmText, setConfirmText] = useState("");
   const [formData, setFormData] = useState<Partial<Drug>>({});
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const {
     data: drugs = [],
@@ -44,36 +46,39 @@ export default function PharmacyInventory() {
   const updateDrugMutation = useUpdateDrug();
   const deleteDrugMutation = useDeleteDrug();
 
-  const handleAdd = async () => {
-    if (
-      formData.sku &&
-      formData.name &&
-      formData.generic_name &&
-      formData.dosage &&
-      formData.quantity &&
-      formData.expiration_date &&
-      formData.manufacturer &&
-      formData.price &&
-      formData.category
-    ) {
-      try {
-        await createDrugMutation.mutateAsync({
-          sku: formData.sku,
-          name: formData.name,
-          generic_name: formData.generic_name,
-          dosage: formData.dosage,
-          quantity: formData.quantity,
-          expiration_date: formData.expiration_date,
-          manufacturer: formData.manufacturer,
-          price: formData.price,
-          category: formData.category,
-          description: formData.description,
-        });
+  const handleFormDataChange = (data: Partial<Drug>) => {
+    setFormData(data);
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+  };
 
-        setFormData({});
-        setIsAddDrawerOpen(false);
-        toast.success("Drug added successfully!");
-      } catch (error) {
+  const handleAdd = async () => {
+    setValidationErrors([]);
+
+    try {
+      await createDrugMutation.mutateAsync({
+        sku: formData.sku || "",
+        name: formData.name || "",
+        generic_name: formData.generic_name || "",
+        dosage: formData.dosage || "",
+        quantity: formData.quantity || 0,
+        expiration_date: formData.expiration_date || "",
+        manufacturer: formData.manufacturer || "",
+        price: formData.price || 0,
+        category: formData.category || "",
+        description: formData.description,
+      });
+
+      setFormData({});
+      setIsAddDrawerOpen(false);
+      toast.success("Drug added successfully!");
+    } catch (error) {
+      const backendErrors = extractValidationErrors(error);
+      if (backendErrors.length > 0) {
+        setValidationErrors(backendErrors);
+        toast.error("Please fix the validation errors");
+      } else {
         toast.error(
           error instanceof Error ? error.message : "Failed to add drug"
         );
@@ -82,18 +87,26 @@ export default function PharmacyInventory() {
   };
 
   const handleEdit = async () => {
-    if (editingDrug && formData.name) {
-      try {
-        await updateDrugMutation.mutateAsync({
-          id: editingDrug.id,
-          drugData: formData,
-        });
+    if (!editingDrug) return;
 
-        setEditingDrug(null);
-        setFormData({});
-        setIsEditDrawerOpen(false);
-        toast.success("Drug updated successfully!");
-      } catch (error) {
+    setValidationErrors([]);
+
+    try {
+      await updateDrugMutation.mutateAsync({
+        id: editingDrug.id,
+        drugData: formData,
+      });
+
+      setEditingDrug(null);
+      setFormData({});
+      setIsEditDrawerOpen(false);
+      toast.success("Drug updated successfully!");
+    } catch (error) {
+      const backendErrors = extractValidationErrors(error);
+      if (backendErrors.length > 0) {
+        setValidationErrors(backendErrors);
+        toast.error("Please fix the validation errors");
+      } else {
         toast.error(
           error instanceof Error ? error.message : "Failed to update drug"
         );
@@ -132,6 +145,7 @@ export default function PharmacyInventory() {
   const resetForm = () => {
     setFormData({});
     setEditingDrug(null);
+    setValidationErrors([]);
   };
 
   const handleAddDrugClick = () => {
@@ -210,15 +224,17 @@ export default function PharmacyInventory() {
         isOpen={isAddDrawerOpen}
         onOpenChange={setIsAddDrawerOpen}
         formData={formData}
-        setFormData={setFormData}
+        setFormData={handleFormDataChange}
         onAdd={handleAdd}
+        validationErrors={validationErrors}
       />
       <EditDrugDrawer
         isOpen={isEditDrawerOpen}
         onOpenChange={setIsEditDrawerOpen}
         formData={formData}
-        setFormData={setFormData}
+        setFormData={handleFormDataChange}
         onEdit={handleEdit}
+        validationErrors={validationErrors}
       />
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}

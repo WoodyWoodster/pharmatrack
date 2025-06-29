@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Drug } from "@/types/drug";
 import { CreateDrugRequest, UpdateDrugRequest } from "@/types/api";
+import { ValidationErrorResponse } from "@/types/validation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -70,6 +71,22 @@ export const drugApi = {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 422 && error.response?.data?.detail) {
+      const validationErrors = error.response.data.detail;
+      if (Array.isArray(validationErrors)) {
+        const customError = new Error(
+          `Validation failed: ${validationErrors.join(", ")}`
+        ) as ValidationErrorResponse;
+        customError.validationErrors = validationErrors.map((msg: string) => ({
+          loc: [],
+          msg,
+          type: "value_error",
+        }));
+        customError.isValidationError = true;
+        throw customError;
+      }
+    }
+
     if (error.response?.data?.detail) {
       throw new Error(error.response.data.detail);
     }
