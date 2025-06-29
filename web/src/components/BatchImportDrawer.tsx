@@ -25,6 +25,7 @@ import { Progress } from "@/components/ui/progress";
 import { useBatchCreateDrugs } from "@/hooks/useDrugs";
 import { Upload, FileText, AlertTriangle, CheckCircle2, X } from "lucide-react";
 import { toast } from "sonner";
+import { extractValidationErrors } from "@/lib/utils";
 
 interface DrugData {
   sku: string;
@@ -162,7 +163,7 @@ export function BatchImportDrawer({
           if (isNaN(date.getTime()) || date < new Date()) {
             errors.push({
               row: index + 1,
-              field: "expiration_date",
+              field: "expiration_datbusinesse",
               message: "Date must be valid and in the future",
             });
           }
@@ -252,8 +253,16 @@ export function BatchImportDrawer({
       setValidationErrors([]);
       setFileName("");
       onOpenChange(false);
-    } catch {
-      toast.error("Failed to import drugs");
+      toast.success("Drugs imported successfully!");
+    } catch (error) {
+      const backendErrors = extractValidationErrors(error);
+      if (backendErrors.length > 0) {
+        toast.error(`Validation errors: ${backendErrors.join("; ")}`);
+      } else {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to import drugs";
+        toast.error(errorMessage);
+      }
     }
   };
 
