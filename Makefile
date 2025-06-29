@@ -12,6 +12,7 @@ help:
 	@echo "  make dev       - Start development environment"
 	@echo "  make logs      - View development logs"
 	@echo "  make stop      - Stop development environment"
+	@echo "  make seed      - Seed the database"
 	@echo ""
 	@echo "Production:"
 	@echo "  make prod      - Start production environment"
@@ -31,6 +32,9 @@ logs:
 
 stop:
 	$(COMPOSE_DEV) down
+
+seed:
+	docker exec -it pharmatrack-api python seed_database.py
 
 # Production
 .PHONY: prod prod-stop

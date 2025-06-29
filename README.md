@@ -14,6 +14,7 @@ A pharmaceutical tracking application built with FastAPI and Next.js 15.
 ## Quick Start
 
 ### Prerequisites
+<http://localhost:3000/>
 
 - Docker
 - Make
@@ -55,6 +56,7 @@ Run `make help` to see all available commands:
 make dev       # Start development environment
 make logs      # View development logs
 make stop      # Stop development environment
+make seed      # Seed development database
 make prod      # Start production environment
 make prod-stop # Stop production environment
 make clean     # Clean up containers and volumes
