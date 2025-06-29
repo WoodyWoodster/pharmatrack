@@ -3,7 +3,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Database URL - PostgreSQL in container
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql://pharmatrack:pharmatrack_password@db:5432/pharmatrack"
 )
